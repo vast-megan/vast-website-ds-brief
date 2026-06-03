@@ -25,8 +25,8 @@
   --keep-dim:  rgba(22,163,74,0.09);
   --cut:       #dc2626;
   --cut-dim:   rgba(220,38,38,0.08);
-  --defer:     #b45309;
-  --defer-dim: rgba(180,83,9,0.08);
+  --defer:     #2563eb;
+  --defer-dim: rgba(37,99,235,0.08);
   --evolve:    #0e7490;
   --evolve-dim: rgba(14,116,144,0.08);
   --shadow-sm:   0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
@@ -864,10 +864,8 @@ body {
 .comp-unmark-btn:hover { background: var(--border); color: var(--text); }
 
 /* ── Deferred item ── */
-.status-deferred { background: #94a3b8; }
-.comp-card.deferred { opacity: 0.65; }
-.comp-card.deferred .comp-card-name { text-decoration: line-through; }
-.comp-deferred { background: rgba(148,163,184,0.12); color: #64748b; }
+.status-deferred { background: var(--defer); }
+.comp-deferred { background: var(--defer-dim); color: var(--defer); }
 
 /* ── Custom item ── */
 .comp-card.custom-item { border-left: 3px solid var(--orange) !important; }
@@ -987,7 +985,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 .sl-todo     { background: var(--surface2); color: var(--muted); }
 .sl-progress { background: rgba(245,158,11,0.12); color: #b45309; }
 .sl-done     { background: var(--keep-dim); color: var(--keep); }
-.sl-deferred { background: rgba(148,163,184,0.12); color: #64748b; }
+.sl-deferred { background: var(--defer-dim); color: var(--defer); }
 /* Audit decision states */
 .sl-keep     { background: var(--keep-dim); color: var(--keep); }
 .sl-cut      { background: var(--cut-dim); color: var(--cut); }
@@ -1002,7 +1000,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 .comp-grid-tile:hover { background: var(--bg); }
 .comp-grid-tile.custom-item { border-left: 3px solid var(--orange); }
-.comp-grid-tile.deferred { opacity: 0.55; }
 .comp-grid-tile-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .comp-grid-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; margin-bottom: 4px; }
 .comp-grid-desc { font-size: 11px; color: var(--muted); line-height: 1.45; margin-bottom: 6px; }
@@ -1045,6 +1042,21 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 .card-screenshot.expanded { cursor: zoom-out; }
 .card-screenshot.expanded img { max-height: 800px; object-fit: contain; }
+
+/* ── Read-only card body ── */
+.ro-text {
+  font-size: 13px; color: var(--text); line-height: 1.55; margin: 8px 0 0;
+  padding: 10px 12px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); white-space: pre-wrap; word-break: break-word;
+}
+.ro-empty { font-size: 13px; color: var(--muted); font-style: italic; margin: 10px 0 0; display: block; }
+.ro-variant {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text);
+}
+.ro-variant:last-child { border-bottom: none; }
+.ro-variant-wrap { flex: 1; }
+.ro-variant-notes { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
 .screenshot-label {
   font-family: var(--mono);
@@ -1093,16 +1105,16 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div class="filter-bar" id="filter-bar" style="margin-bottom:0">
         <button class="filter-btn active" onclick="setFilter('all', this)">All (22)</button>
-        <button class="filter-btn" onclick="setFilter('undecided', this)">Undecided</button>
+        <button class="filter-btn" onclick="setFilter('undecided', this)">Not Started</button>
         <button class="filter-btn" onclick="setFilter('keep', this)">Keep / Evolve</button>
         <button class="filter-btn" onclick="setFilter('cut', this)">Cut</button>
-        <button class="filter-btn" onclick="setFilter('defer', this)">Defer</button>
+        <button class="filter-btn" onclick="setFilter('defer', this)">Deferred</button>
       </div>
       <div class="view-toggle">
-        <button class="vtoggle" id="af-list-btn" onclick="setListView('audit','list')" title="List view">
+        <button class="vtoggle active" id="af-list-btn" onclick="setListView('audit','list')" title="List view">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
         </button>
-        <button class="vtoggle active" id="af-grid-btn" onclick="setListView('audit','grid')" title="Grid view">
+        <button class="vtoggle" id="af-grid-btn" onclick="setListView('audit','grid')" title="Grid view">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
         </button>
       </div>
@@ -1134,10 +1146,10 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
         <button class="comp-subtab" onclick="switchCompTab('atoms', this)">Atoms</button>
       </div>
       <div class="view-toggle">
-        <button class="vtoggle" id="cv-list-btn" onclick="setCompView('list')" title="List view">
+        <button class="vtoggle active" id="cv-list-btn" onclick="setCompView('list')" title="List view">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
         </button>
-        <button class="vtoggle active" id="cv-grid-btn" onclick="setCompView('grid')" title="Grid view">
+        <button class="vtoggle" id="cv-grid-btn" onclick="setCompView('grid')" title="Grid view">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
         </button>
       </div>
@@ -1410,24 +1422,24 @@ const openDecisionCards = new Set(); // same for Decisions list view
 let activeFilter = 'all';
 let activeTab = 'dashboard';
 let dashView = 'list';
-// Grid/list modes — default to grid
-const viewModes = { audit: 'grid', decisions: 'grid', blockers: 'grid' };
+// Grid/list modes — default to list
+const viewModes = { audit: 'list', decisions: 'list', blockers: 'list' };
 // Filter states
 let blockersFilter  = 'all';  // all | strategic | deferred-audit | deferred-comp
 let decisionsFilter = 'all';  // all | components | audit
 
 // Blockers — strategic open decisions
 const BLOCKERS = [
-  'Type ramp — which 5 styles are the final set?',
-  'Deep dive model — Stripe (expand-in-place) or Apple (drill-down to new view)?',
-  'Video autoplay — yes or no? Affects video block and tab panel.',
-  'Accordion vs tabs — for specs and technical content?',
-  'Footer structure — which of the 4 current variants becomes the one?',
-  'Center-alignment — blanket rule or case-by-case?',
-  'Copy density — 150 chars confirmed for descriptions? Any exceptions?',
-  'Icon style — line weight, outline vs filled? Must be defined before icon set is built.',
-  'Breakpoints — mobile and tablet behavior not yet defined at all.',
-  'Dark mode — full dark mode or surface variants (dark sections) only?'
+  'Type ramp — Which 5 styles are the final set?',
+  'Deep dive model — Stripe (expand in place) or Apple (drill down to a new view)?',
+  'Video autoplay — Yes or no? Affects the video block and tab panel.',
+  'Accordion vs tabs — For specs and technical content?',
+  'Footer structure — Which of the 4 current variants wins?',
+  'Center alignment — Blanket rule or decided case-by-case?',
+  'Copy density — 150 characters confirmed for descriptions? Any exceptions?',
+  'Icon style — Line weight, outline vs filled? Must be defined before the icon set is built.',
+  'Breakpoints — Mobile and tablet behavior — nothing defined yet.',
+  'Dark mode — Full dark mode or surface variants (dark sections) only?'
 ];
 // Helpers to split "Title — description" strings
 function bTitle(q) { return q.split(' — ')[0]; }
@@ -1515,7 +1527,7 @@ function renderCards() {
     const auditTile = item => {
       const d = state[item.id]?.decision || 'undecided';
       return `<div class="comp-grid-tile" onclick="openAuditModal(${item.id})">
-        <span class="status-label sl-${d}">${{keep:'Keep / Evolve',cut:'Cut',defer:'Defer',undecided:'Undecided'}[d]}</span>
+        <span class="status-label sl-${d}">${{keep:'Keep / Evolve',cut:'Cut',defer:'Deferred',undecided:'Not Started'}[d]}</span>
         <div class="comp-grid-name">${escH(item.title)}</div>
         <div class="comp-grid-desc">${escH(item.desc)}</div>
         <div class="comp-grid-cat">Item #${item.id}</div>
@@ -1549,15 +1561,43 @@ function openAuditModal(id) {
   const content = document.getElementById('comp-modal-content');
   if (!modal || !content) return;
 
-  const d      = state[item.id]?.decision || 'undecided';
-  const notes  = state[item.id]?.notes    || '';
-  const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
+  const d         = state[item.id]?.decision || 'undecided';
+  const notes     = state[item.id]?.notes    || '';
+  const isEditing = editingCards.has(item.id);
+  const ro        = d !== 'undecided' && !isEditing;
+  const labels    = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Deferred', undecided: 'Not Started' };
 
   const comments = item.comments.map(c => `
     <div class="comment">
       <div class="comment-who">${c.who}</div>
       <div class="comment-text">"${escH(c.text)}"</div>
     </div>`).join('');
+
+  const refHtml = `
+    ${item.screenshot ? `
+      <div class="card-screenshot" onclick="this.classList.toggle('expanded')" style="margin-bottom:14px">
+        <img src="${item.screenshot}" alt="${escH(item.title)}" loading="lazy">
+        <div class="screenshot-label">Figma screenshot — click to expand</div>
+      </div>` : ''}
+    ${item.hint ? `<div class="hint-box" style="margin-bottom:14px">💡 ${escH(item.hint)}</div>` : ''}
+    <div class="comments-list" style="margin-bottom:14px">${comments}</div>`;
+
+  const modalBody = ro
+    ? `${refHtml}
+       ${notes ? `<div class="notes-label">Notes</div><p class="ro-text">${escH(notes)}</p>` : '<span class="ro-empty" style="display:block;margin-bottom:10px">No notes added.</span>'}
+       <div class="comp-card-actions" style="margin-top:16px">
+         <button class="comp-mark-btn" onclick="toggleEditModeAuditModal(${item.id})">Edit</button>
+       </div>`
+    : `${refHtml}
+       <div class="notes-label">Notes</div>
+       <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
+         oninput="setNotes(${item.id}, this.value)">${escH(notes)}</textarea>
+       <div class="dec-row" style="margin-top:12px">
+         <button class="dec-btn ${d==='keep'?'sel-keep':''}" onclick="decideAndRefreshModal(${item.id},'keep')">✓ Keep / Evolve</button>
+         <button class="dec-btn ${d==='cut'?'sel-cut':''}" onclick="decideAndRefreshModal(${item.id},'cut')">✕ Cut</button>
+         <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decideAndRefreshModal(${item.id},'defer')">→ Deferred</button>
+       </div>
+       ${isEditing ? `<div class="comp-card-actions" style="margin-top:10px"><button class="comp-mark-btn" onclick="toggleEditModeAuditModal(${item.id})">Done editing</button></div>` : ''}`;
 
   content.innerHTML = `
     <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px">
@@ -1567,24 +1607,9 @@ function openAuditModal(id) {
         <div style="font-size:13px;color:var(--muted);margin-top:4px">${escH(item.desc)}</div>
         ${item.node ? `<span class="node-tag" style="margin-top:6px;display:inline-block">node ${item.node}</span>` : ''}
       </div>
-      <span class="badge d-${d}">${labels[d]}</span>
+      <span class="status-label sl-${d}">${labels[d]}</span>
     </div>
-    ${item.screenshot ? `
-      <div class="card-screenshot" onclick="this.classList.toggle('expanded')" style="margin-bottom:14px">
-        <img src="${item.screenshot}" alt="${escH(item.title)}" loading="lazy">
-        <div class="screenshot-label">Figma screenshot — click to expand</div>
-      </div>` : ''}
-    ${item.hint ? `<div class="hint-box" style="margin-bottom:14px">💡 ${escH(item.hint)}</div>` : ''}
-    <div class="comments-list" style="margin-bottom:14px">${comments}</div>
-    <div class="dec-row">
-      <button class="dec-btn ${d==='keep'?'sel-keep':''}" onclick="decideAndRefreshModal(${item.id},'keep')">✓ Keep / Evolve</button>
-      <button class="dec-btn ${d==='cut'?'sel-cut':''}" onclick="decideAndRefreshModal(${item.id},'cut')">✕ Cut</button>
-      <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decideAndRefreshModal(${item.id},'defer')">→ Defer</button>
-    </div>
-    <div class="notes-label">Notes / Refinements</div>
-    <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
-      oninput="setNotes(${item.id}, this.value)">${escH(notes)}</textarea>
-  `;
+    ${modalBody}`;
 
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -1597,9 +1622,13 @@ function decideAndRefreshModal(id, decision) {
 }
 
 function card(item) {
-  const d     = state[item.id]?.decision || 'undecided';
-  const notes = state[item.id]?.notes || '';
-  const open  = openAuditCards.has(item.id);
+  const d         = state[item.id]?.decision || 'undecided';
+  const notes     = state[item.id]?.notes || '';
+  const open      = openAuditCards.has(item.id);
+  const isEditing = editingCards.has(item.id);
+  const ro        = d !== 'undecided' && !isEditing;
+
+  const auditLabels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Deferred', undecided: 'Not Started' };
 
   const comments = item.comments.map(c => `
     <div class="comment">
@@ -1608,8 +1637,32 @@ function card(item) {
     </div>
   `).join('');
 
-  const nodeTag = item.node ? `<span class="node-tag">node ${item.node}</span>` : '';
-  const auditLabels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
+  const refHtml = `
+    ${item.node ? `<div style="margin:10px 0 6px"><span class="node-tag">node ${item.node}</span></div>` : ''}
+    ${item.screenshot ? `
+      <div class="card-screenshot" onclick="this.classList.toggle('expanded')" title="Click to expand / collapse">
+        <img src="${item.screenshot}" alt="${item.title}" loading="lazy">
+        <div class="screenshot-label">Figma screenshot — click to expand</div>
+      </div>` : ''}
+    ${item.hint ? `<div class="hint-box">💡 ${item.hint}</div>` : ''}
+    <div class="comments-list">${comments}</div>`;
+
+  const bodyHtml = ro
+    ? `${refHtml}
+       ${notes ? `<div class="notes-label">Notes</div><p class="ro-text">${escH(notes)}</p>` : '<span class="ro-empty" style="display:block;margin-top:10px">No notes added.</span>'}
+       <div class="comp-card-actions" style="margin-top:14px">
+         <button class="comp-mark-btn" onclick="toggleEditMode(${item.id})">Edit</button>
+       </div>`
+    : `${refHtml}
+       <div class="notes-label">Notes</div>
+       <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
+         oninput="setNotes(${item.id}, this.value)">${notes}</textarea>
+       <div class="dec-row" style="margin-top:12px">
+         <button class="dec-btn ${d==='keep'?'sel-keep':''}"   onclick="decide(${item.id},'keep')">✓ Keep / Evolve</button>
+         <button class="dec-btn ${d==='cut'?'sel-cut':''}"    onclick="decide(${item.id},'cut')">✕ Cut</button>
+         <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${item.id},'defer')">→ Deferred</button>
+       </div>
+       ${isEditing ? `<div class="comp-card-actions" style="margin-top:10px"><button class="comp-mark-btn" onclick="toggleEditMode(${item.id})">Done editing</button></div>` : ''}`;
 
   return `
     <div class="card d-${d} ${open ? 'open' : ''}" id="card-${item.id}">
@@ -1621,25 +1674,7 @@ function card(item) {
         </div>
         <div class="card-chevron">▶</div>
       </div>
-      <div class="card-body">
-        ${nodeTag ? `<div style="margin:10px 0 6px">${nodeTag}</div>` : ''}
-        ${item.screenshot ? `
-          <div class="card-screenshot" onclick="this.classList.toggle('expanded')" title="Click to expand / collapse">
-            <img src="${item.screenshot}" alt="${item.title}" loading="lazy">
-            <div class="screenshot-label">Figma screenshot — click to expand</div>
-          </div>` : ''}
-        ${item.hint ? `<div class="hint-box">💡 ${item.hint}</div>` : ''}
-        <div class="comments-list">${comments}</div>
-        <div class="dec-row">
-          <button class="dec-btn ${d==='keep'?'sel-keep':''}"   onclick="decide(${item.id},'keep')">✓ Keep / Evolve</button>
-          <button class="dec-btn ${d==='cut'?'sel-cut':''}"    onclick="decide(${item.id},'cut')">✕ Cut</button>
-          <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${item.id},'defer')">→ Defer</button>
-        </div>
-        <div class="notes-label">Notes / Refinements</div>
-        <textarea class="notes-input"
-          placeholder="Add context, conditions, or what to keep/remove..."
-          oninput="setNotes(${item.id}, this.value)">${notes}</textarea>
-      </div>
+      <div class="card-body">${bodyHtml}</div>
     </div>
   `;
 }
@@ -1679,7 +1714,7 @@ function renderBrief() {
   t += `${line}\n`;
   t += `  Keep / Evolve  ${s.keep} items\n`;
   t += `  Cut      ${cuts.length} items${cutEst}\n`;
-  t += `  Defer    ${defers.length} items (post-launch)\n`;
+  t += `  Deferred ${defers.length} items (post-launch)\n`;
   if (undecided.length > 0) {
   t += `  TBD      ${undecided.length} items still need a decision\n`;
   }
@@ -2068,7 +2103,7 @@ function renderNewDashboard() {
           <div class="score-box s-total"><div class="score-num" id="sc-total">0</div><div class="score-label">Decided</div></div>
           <div class="score-box s-keep"><div class="score-num" id="sc-keep">0</div><div class="score-label">Keep / Evolve</div></div>
           <div class="score-box s-cut"><div class="score-num" id="sc-cut">0</div><div class="score-label">Cut</div></div>
-          <div class="score-box s-defer"><div class="score-num" id="sc-defer">0</div><div class="score-label">Defer</div></div>
+          <div class="score-box s-defer"><div class="score-num" id="sc-defer">0</div><div class="score-label">Deferred</div></div>
         </div>
       </div>
       <div>
@@ -2076,8 +2111,8 @@ function renderNewDashboard() {
         <div class="key">
           <div class="key-item"><span class="key-dot" style="background:var(--keep)"></span><span><strong>Keep / Evolve</strong> — stays in scope, with or without iteration</span></div>
           <div class="key-item"><span class="key-dot" style="background:var(--cut)"></span><span><strong>Cut</strong> — remove entirely, not needed for launch</span></div>
-          <div class="key-item"><span class="key-dot" style="background:var(--defer)"></span><span><strong>Defer</strong> — good idea, revisit after launch</span></div>
-          <div class="key-item"><span class="key-dot" style="background:var(--border)"></span><span><strong>Undecided</strong> — needs a decision before briefing Antinomy</span></div>
+          <div class="key-item"><span class="key-dot" style="background:var(--defer)"></span><span><strong>Deferred</strong> — good idea, revisit after launch</span></div>
+          <div class="key-item"><span class="key-dot" style="background:var(--border)"></span><span><strong>Not Started</strong> — needs a decision before briefing Antinomy</span></div>
         </div>
       </div>
     </div>
@@ -2112,25 +2147,35 @@ function renderBlockers() {
           <div class="comp-grid-cat">Item #${i + 1}</div>
         </div>`;
     }
-    const isOpen = openBlockerCards.has(i);
+    const isOpen    = openBlockerCards.has(i);
+    const isEditing = editingCards.has('blk-' + i);
+    const ro        = b.resolved && !isEditing;
+    const bodyHtml  = ro
+      ? `${b.answer ? `<div class="notes-label" style="margin-top:12px">Decision / Answer</div><p class="ro-text">${escH(b.answer)}</p>` : '<span class="ro-empty" style="display:block;margin-top:12px">No answer recorded.</span>'}
+         <div class="comp-card-actions" style="margin-top:12px">
+           <button class="comp-unmark-btn" onclick="toggleBlockerFromCard(${i})">Mark unresolved</button>
+           <button class="comp-mark-btn" onclick="toggleBlockerEditMode(${i})">Edit</button>
+         </div>`
+      : `<div class="notes-label" style="margin-top:12px">Decision / Answer</div>
+         <textarea class="notes-input" placeholder="Write your decision here…"
+           oninput="updateBlockerAnswer(${i}, this.value)">${escH(b.answer)}</textarea>
+         <div class="comp-card-actions">
+           ${b.resolved
+             ? `<button class="comp-unmark-btn" onclick="toggleBlockerFromCard(${i})">Mark unresolved</button>
+                <button class="comp-mark-btn" onclick="toggleBlockerEditMode(${i})">Done editing</button>`
+             : `<button class="comp-mark-btn" onclick="toggleBlockerFromCard(${i})">Mark resolved</button>`}
+         </div>`;
     return `
       <div class="comp-card ${isOpen ? 'open' : ''}" id="blk-card-${i}">
         <div class="comp-card-header" onclick="toggleBlockerCard(${i})">
           <span class="status-label sl-${s}">${statusLabel(s)}</span>
-          <span class="comp-card-name">${escH(bTitle(q))}</span>
+          <div style="flex:1;min-width:0">
+            <div class="card-title">${escH(bTitle(q))}</div>
+            ${bDesc(q) ? `<div class="card-desc">${escH(bDesc(q))}</div>` : ''}
+          </div>
           <span class="comp-chevron">▶</span>
         </div>
-        <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-          <p style="font-size:13px;color:var(--muted);margin:12px 0 14px;line-height:1.5">${escH(bDesc(q))}</p>
-          <div class="notes-label">Decision / Answer</div>
-          <textarea class="notes-input" placeholder="Write your decision here…"
-            oninput="updateBlockerAnswer(${i}, this.value)">${escH(b.answer)}</textarea>
-          <div class="comp-card-actions">
-            ${b.resolved
-              ? `<button class="comp-unmark-btn" onclick="toggleBlockerFromCard(${i})">Mark unresolved</button>`
-              : `<button class="comp-mark-btn" onclick="toggleBlockerFromCard(${i})">Mark resolved</button>`}
-          </div>
-        </div>
+        <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
       </div>`;
   }).join('');
 
@@ -2139,10 +2184,11 @@ function renderBlockers() {
   const deferredAuditHtml = deferredAudit.length === 0
     ? '<div class="empty" style="padding:12px 0;font-size:13px">No deferred audit items.</div>'
     : mode === 'grid'
-      ? `<div class="dash-grid">${deferredAudit.map(item => `
-          <div class="grid-card d-defer" onclick="openAuditModal(${item.id})" style="cursor:pointer">
-            <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-defer">Defer</span></div>
-            <div class="grid-title">${escH(item.title)}</div>
+      ? `<div class="comp-grid-wrap">${deferredAudit.map(item => `
+          <div class="comp-grid-tile" onclick="openAuditModal(${item.id})">
+            <span class="status-label sl-defer">Deferred</span>
+            <div class="comp-grid-name">${escH(item.title)}</div>
+            <div class="comp-grid-cat">Item #${item.id}</div>
           </div>`).join('')}</div>`
       : `<div class="cards-list">${deferredAudit.map(item => card(item)).join('')}</div>`;
 
@@ -2160,7 +2206,7 @@ function renderBlockers() {
     : mode === 'grid'
       ? `<div class="comp-grid-wrap">${deferredCompHtmlParts.map(c => `
           <div class="comp-grid-tile deferred" onclick="openGridModal('${c.type}','${c.id}')">
-            <div class="comp-grid-tile-top"><span class="status-dot status-deferred"></span><span class="comp-badge comp-deferred" style="font-size:9px">Deferred</span></div>
+            <span class="status-label sl-deferred">Deferred</span>
             <div class="comp-grid-name">${escH(c.name)}</div>
             <div class="comp-grid-cat">${escH(c.label)} · ${escH(c.cat)}</div>
           </div>`).join('')}</div>`
@@ -2194,6 +2240,107 @@ function renderBlockers() {
 
 // Track open blocker list cards
 const openBlockerCards = new Set();
+
+// Track open deferred-comp list cards (in Blockers tab list mode)
+const openDeferredCards = new Set();
+
+// Session-only: which done/ready cards are currently open for editing
+const editingCards = new Set();
+
+function toggleEditMode(id) {
+  if (editingCards.has(id)) editingCards.delete(id);
+  else editingCards.add(id);
+  const y = window.scrollY;
+  if (activeTab === 'components') { renderCompTab(); updateCompProgress(); }
+  else if (activeTab === 'audit') renderCards();
+  else if (activeTab === 'decisions') renderDecisionsSummary();
+  window.scrollTo(0, y);
+}
+
+function toggleEditModeModal(tier, id) {
+  if (editingCards.has(id)) editingCards.delete(id);
+  else editingCards.add(id);
+  openGridModal(tier, id);
+}
+
+function toggleEditModeAuditModal(id) {
+  if (editingCards.has(id)) editingCards.delete(id);
+  else editingCards.add(id);
+  openAuditModal(id);
+}
+
+// Blocker edit mode uses 'blk-N' keys to avoid collision with audit/component ids
+// Decisions tab: blocker card open/close and edit mode
+function toggleBlockerDecCard(index) {
+  const key = 'blk-dec-' + index;
+  if (openDecisionCards.has(key)) openDecisionCards.delete(key);
+  else openDecisionCards.add(key);
+  const y = window.scrollY;
+  renderDecisionsSummary();
+  window.scrollTo(0, y);
+}
+
+function toggleBlockerEditModeDecisions(index) {
+  const key = 'blk-' + index;
+  if (editingCards.has(key)) editingCards.delete(key);
+  else editingCards.add(key);
+  const y = window.scrollY;
+  renderDecisionsSummary();
+  window.scrollTo(0, y);
+}
+
+function toggleBlockerEditMode(index) {
+  const key = 'blk-' + index;
+  if (editingCards.has(key)) editingCards.delete(key);
+  else editingCards.add(key);
+  const y = window.scrollY;
+  renderBlockers();
+  renderDecisionsSummary();
+  window.scrollTo(0, y);
+}
+
+function toggleBlockerEditModeModal(index) {
+  const key = 'blk-' + index;
+  if (editingCards.has(key)) editingCards.delete(key);
+  else editingCards.add(key);
+  openBlockerModal(index);
+}
+
+function setAuditReady(id) {
+  if (!state[id]) state[id] = {};
+  state[id].ready = true;
+  editingCards.delete(id);
+  save();
+  refresh();
+}
+
+function unsetAuditReady(id) {
+  if (!state[id]) state[id] = {};
+  state[id].ready = false;
+  save();
+  refresh();
+}
+
+// Track open component cards in Decisions tab list mode
+const openCompDecCards = new Set();
+
+function toggleCompDecCard(id) {
+  if (openCompDecCards.has(id)) openCompDecCards.delete(id);
+  else openCompDecCards.add(id);
+  const card = document.getElementById('cdc-' + id);
+  const body = card?.querySelector('.comp-card-body');
+  if (card) card.classList.toggle('open', openCompDecCards.has(id));
+  if (body) body.classList.toggle('hidden', !openCompDecCards.has(id));
+}
+
+function toggleDeferredCard(id) {
+  if (openDeferredCards.has(id)) openDeferredCards.delete(id);
+  else openDeferredCards.add(id);
+  const card = document.getElementById('deferred-' + id);
+  const body = card?.querySelector('.comp-card-body');
+  if (card) card.classList.toggle('open', openDeferredCards.has(id));
+  if (body) body.classList.toggle('hidden', !openDeferredCards.has(id));
+}
 
 function updateBlockerAnswer(index, value) {
   blockerState[index].answer = value;
@@ -2242,17 +2389,36 @@ function toggleBlockerFromCard(index) {
   const y = window.scrollY;
   renderBlockers();
   renderNewDashboard();
+  if (activeTab === 'decisions') renderDecisionsSummary();
   window.scrollTo(0, y);
 }
 
 function openBlockerModal(index) {
-  const b = blockerState[index];
-  const q = BLOCKERS[index];
-  const modal   = document.getElementById('comp-modal');
-  const content = document.getElementById('comp-modal-content');
+  const b         = blockerState[index];
+  const q         = BLOCKERS[index];
+  const modal     = document.getElementById('comp-modal');
+  const content   = document.getElementById('comp-modal-content');
   if (!modal || !content) return;
 
-  const s = b.resolved ? 'done' : (b.answer.trim() ? 'progress' : 'todo');
+  const s         = b.resolved ? 'done' : (b.answer.trim() ? 'progress' : 'todo');
+  const isEditing = editingCards.has('blk-' + index);
+  const ro        = b.resolved && !isEditing;
+
+  const modalBody = ro
+    ? `${b.answer ? `<div class="notes-label">Decision / Answer</div><p class="ro-text">${escH(b.answer)}</p>` : '<span class="ro-empty" style="display:block;margin-bottom:10px">No answer recorded.</span>'}
+       <div class="comp-card-actions" style="margin-top:16px">
+         <button class="comp-unmark-btn" onclick="toggleBlockerFromModal(${index})">Mark unresolved</button>
+         <button class="comp-mark-btn" onclick="toggleBlockerEditModeModal(${index})">Edit</button>
+       </div>`
+    : `<div class="notes-label">Decision / Answer</div>
+       <textarea class="notes-input" style="min-height:100px" placeholder="Write your decision here…"
+         oninput="updateBlockerAnswerModal(${index}, this.value)">${escH(b.answer)}</textarea>
+       <div class="comp-card-actions" style="margin-top:16px">
+         ${b.resolved
+           ? `<button class="comp-unmark-btn" onclick="toggleBlockerFromModal(${index})">Mark unresolved</button>
+              <button class="comp-mark-btn" onclick="toggleBlockerEditModeModal(${index})">Done editing</button>`
+           : `<button class="comp-mark-btn" onclick="toggleBlockerFromModal(${index})">Mark resolved</button>`}
+       </div>`;
 
   content.innerHTML = `
     <div style="margin-bottom:20px">
@@ -2261,14 +2427,7 @@ function openBlockerModal(index) {
       <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:4px">${escH(bDesc(q))}</div>
       <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em">Item #${index + 1} of ${BLOCKERS.length}</div>
     </div>
-    <div class="notes-label">Decision / Answer</div>
-    <textarea class="notes-input" style="min-height:100px" placeholder="Write your decision here…"
-      oninput="updateBlockerAnswerModal(${index}, this.value)">${escH(b.answer)}</textarea>
-    <div class="comp-card-actions" style="margin-top:16px">
-      ${b.resolved
-        ? `<button class="comp-unmark-btn" onclick="toggleBlockerFromModal(${index})">Mark unresolved</button>`
-        : `<button class="comp-mark-btn" onclick="toggleBlockerFromModal(${index})">Mark resolved</button>`}
-    </div>`;
+    ${modalBody}`;
 
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -2285,6 +2444,7 @@ function toggleBlockerFromModal(index) {
   openBlockerModal(index);  // refresh modal state
   renderBlockers();
   renderNewDashboard();
+  if (activeTab === 'decisions') renderDecisionsSummary();
 }
 
 // ─────────────────────────────────────────────
@@ -2305,35 +2465,58 @@ function renderDecisionsSummary() {
 
   const allCompDone = [...orgDone, ...molDone, ...atmDone];
 
-  const compTile = i => `
-    <div class="comp-grid-tile" style="cursor:default">
+  const tiers = ['org', 'mol', 'atom'];
+
+  const compTile = (i, tier) => `
+    <div class="comp-grid-tile" onclick="openGridModal('${tier}','${i.id}')">
       <span class="status-label sl-done">Ready</span>
       <div class="comp-grid-name">${escH(i.name)}</div>
       <div class="comp-grid-cat">${escH(i.cat)}</div>
     </div>`;
-  const compRow = i => `
-    <div class="comp-card" style="cursor:default">
-      <div class="comp-card-header" style="cursor:default">
-        <span class="status-label sl-done">Ready</span>
-        <span class="comp-card-name">${escH(i.name)}</span>
-        <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto">${escH(i.cat)}</span>
-      </div>
-    </div>`;
+
+  const compRow = (i, tier) => {
+    const data = tier === 'org' ? getOrgData(i.id) : tier === 'mol' ? getMolData(i.id) : getAtomData(i.id);
+    const isOpen = openCompDecCards.has(i.id);
+    const typesHtml = data.types
+      ? `<div class="notes-label" style="margin-top:14px">Types / States</div><div class="type-chips">${data.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>`
+      : '';
+    const variantsHtml = data.variants
+      ? `<div class="notes-label" style="margin-top:14px">Variants</div>${data.variants.map(v => `<div style="padding:7px 0;font-size:13px;color:var(--text);border-bottom:1px solid var(--border)">${escH(v.name)}${v.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${escH(v.notes)}</div>` : ''}</div>`).join('')}`
+      : '';
+    const notesHtml = data.notes
+      ? `<div class="notes-label" style="margin-top:14px">Notes</div><p style="font-size:13px;color:var(--text);line-height:1.5;margin:0">${escH(data.notes)}</p>`
+      : '';
+    const emptyHtml = !typesHtml && !variantsHtml && !notesHtml
+      ? '<p style="font-size:13px;color:var(--muted);margin:14px 0 0">No notes added yet.</p>'
+      : '';
+    return `
+      <div class="comp-card ${isOpen ? 'open' : ''}" id="cdc-${i.id}">
+        <div class="comp-card-header" onclick="toggleCompDecCard('${i.id}')">
+          <span class="status-label sl-done">Ready</span>
+          <span class="comp-card-name">${escH(i.name)}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto">${escH(i.cat)}</span>
+          <span class="comp-chevron">▶</span>
+        </div>
+        <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+          ${typesHtml}${variantsHtml}${notesHtml}${emptyHtml}
+        </div>
+      </div>`;
+  };
 
   const compSection = compTotal === 0
     ? '<div class="empty" style="padding:16px 0;text-align:left">No components marked ready yet. Mark items as ready in the Components tab.</div>'
     : ['Organisms','Molecules','Atoms'].map((label, li) => {
         const items = [orgDone, molDone, atmDone][li];
         if (!items.length) return '';
-        return `<div class="section-divider">${label} — ${items.length}</div>
+        return `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${label} — ${items.length}</span><span class="comp-summary-link" onclick="switchTabByName('components')">Go to Components →</span></div>
           ${mode === 'grid'
-            ? `<div class="comp-grid-wrap">${items.map(compTile).join('')}</div>`
-            : items.map(compRow).join('')}`;
+            ? `<div class="comp-grid-wrap">${items.map(i => compTile(i, tiers[li])).join('')}</div>`
+            : items.map(i => compRow(i, tiers[li])).join('')}`;
       }).join('');
 
   // Audit decisions
   const s = stats();
-  const decLabels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer' };
+  const decLabels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Deferred' };
   const keeps  = ITEMS.filter(i => state[i.id]?.decision === 'keep');
   const cuts   = ITEMS.filter(i => state[i.id]?.decision === 'cut');
   const defers = ITEMS.filter(i => state[i.id]?.decision === 'defer');
@@ -2349,53 +2532,96 @@ function renderDecisionsSummary() {
     </div>`;
   };
   const auditRowD = i => {
-    const d    = state[i.id]?.decision || 'undecided';
-    const open = openDecisionCards.has(i.id);
-    const notes = state[i.id]?.notes || '';
-    const comments = i.comments.map(c => `
+    const d         = state[i.id]?.decision || 'undecided';
+    const notes     = state[i.id]?.notes || '';
+    const open      = openDecisionCards.has(i.id);
+    const isEditing = editingCards.has(i.id);
+    const ro        = d !== 'undecided' && !isEditing;
+    const comments  = i.comments.map(c => `
       <div class="comment">
         <div class="comment-who">${c.who}</div>
         <div class="comment-text">"${escH(c.text)}"</div>
       </div>`).join('');
+    const refHtml = `
+      ${i.node ? `<div style="margin:10px 0 6px"><span class="node-tag">node ${i.node}</span></div>` : ''}
+      ${i.screenshot ? `
+        <div class="card-screenshot" onclick="this.classList.toggle('expanded')" style="margin-bottom:12px">
+          <img src="${i.screenshot}" alt="${escH(i.title)}" loading="lazy">
+          <div class="screenshot-label">Figma screenshot — click to expand</div>
+        </div>` : ''}
+      ${i.hint ? `<div class="hint-box" style="margin-bottom:10px">💡 ${escH(i.hint)}</div>` : ''}
+      <div class="comments-list">${comments}</div>`;
+    const bodyHtml = ro
+      ? `${refHtml}
+         ${notes ? `<div class="notes-label">Notes</div><p class="ro-text">${escH(notes)}</p>` : '<span class="ro-empty" style="display:block;margin-top:10px">No notes added.</span>'}
+         <div class="comp-card-actions" style="margin-top:14px">
+           <button class="comp-mark-btn" onclick="toggleEditMode(${i.id})">Edit</button>
+         </div>`
+      : `${refHtml}
+         <div class="notes-label">Notes</div>
+         <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
+           oninput="setNotes(${i.id}, this.value)">${escH(notes)}</textarea>
+         <div class="dec-row" style="margin-top:12px">
+           <button class="dec-btn ${d==='keep'?'sel-keep':''}" onclick="decide(${i.id},'keep')">✓ Keep / Evolve</button>
+           <button class="dec-btn ${d==='cut'?'sel-cut':''}" onclick="decide(${i.id},'cut')">✕ Cut</button>
+           <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${i.id},'defer')">→ Deferred</button>
+         </div>
+         ${isEditing ? `<div class="comp-card-actions" style="margin-top:10px"><button class="comp-mark-btn" onclick="toggleEditMode(${i.id})">Done editing</button></div>` : ''}`;
     return `
       <div class="comp-card ${open ? 'open' : ''}" id="dc-${i.id}">
         <div class="comp-card-header" onclick="toggleDecisionCard(${i.id})">
-          <span class="status-label sl-${d}">${decLabels[d] || 'Undecided'}</span>
+          <span class="status-label sl-${d}">${decLabels[d] || 'Not Started'}</span>
           <span class="comp-card-name">${escH(i.title)}</span>
           <span class="comp-chevron">▶</span>
         </div>
-        <div class="comp-card-body ${open ? '' : 'hidden'}">
-          <p style="font-size:13px;color:var(--muted);margin:12px 0 10px;line-height:1.5">${escH(i.desc)}</p>
-          ${i.hint ? `<div class="hint-box" style="margin-bottom:10px">💡 ${escH(i.hint)}</div>` : ''}
-          ${i.node ? `<span class="node-tag" style="margin-bottom:12px;display:inline-block">node ${i.node}</span>` : ''}
-          ${i.screenshot ? `
-            <div class="card-screenshot" onclick="this.classList.toggle('expanded')" style="margin-bottom:12px">
-              <img src="${i.screenshot}" alt="${escH(i.title)}" loading="lazy">
-              <div class="screenshot-label">Figma screenshot — click to expand</div>
-            </div>` : ''}
-          <div class="comments-list" style="margin-bottom:12px">${comments}</div>
-          <div class="dec-row">
-            <button class="dec-btn ${d==='keep'?'sel-keep':''}" onclick="decide(${i.id},'keep')">✓ Keep / Evolve</button>
-            <button class="dec-btn ${d==='cut'?'sel-cut':''}" onclick="decide(${i.id},'cut')">✕ Cut</button>
-            <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${i.id},'defer')">→ Defer</button>
-          </div>
-          <div class="notes-label" style="margin-top:12px">Notes / Refinements</div>
-          <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
-            oninput="setNotes(${i.id}, this.value)">${escH(notes)}</textarea>
-        </div>
+        <div class="comp-card-body ${open ? '' : 'hidden'}">${bodyHtml}</div>
       </div>`;
   };
 
   const auditSection = s.total === 0
-    ? '<div class="empty" style="padding:16px 0;text-align:left">No audit decisions made yet. Make Keep/Cut/Defer decisions in Audit Feedback.</div>'
+    ? '<div class="empty" style="padding:16px 0;text-align:left">No audit decisions made yet. Make Keep / Cut / Deferred decisions in Audit Feedback.</div>'
     : mode === 'grid'
       ? `<div class="comp-grid-wrap">${allDecided.map(auditTileD).join('')}</div>`
       : allDecided.map(auditRowD).join('');
+
+  // Resolved blockers
+  const resolvedBlockers = BLOCKERS.map((q, i) => ({ q, i, b: blockerState[i] })).filter(x => x.b.resolved);
+  const resolvedBlockerSection = resolvedBlockers.length === 0
+    ? '<div class="empty" style="padding:16px 0;text-align:left">No blockers resolved yet. Resolve decisions in the Blockers tab.</div>'
+    : resolvedBlockers.map(({ q, i, b }) => {
+        const isOpen    = openDecisionCards.has('blk-dec-' + i);
+        const isEditing = editingCards.has('blk-' + i);
+        const ro        = !isEditing;
+        const bodyHtml  = ro
+          ? `${b.answer ? `<div class="notes-label">Decision / Answer</div><p class="ro-text">${escH(b.answer)}</p>` : '<span class="ro-empty" style="display:block;margin-top:10px">No answer recorded.</span>'}
+             <div class="comp-card-actions" style="margin-top:14px">
+               <button class="comp-mark-btn" onclick="toggleBlockerEditModeDecisions(${i})">Edit</button>
+             </div>`
+          : `<div class="notes-label">Decision / Answer</div>
+             <textarea class="notes-input" placeholder="Write your decision here…"
+               oninput="updateBlockerAnswer(${i}, this.value)">${escH(b.answer)}</textarea>
+             <div class="comp-card-actions" style="margin-top:10px">
+               <button class="comp-mark-btn" onclick="toggleBlockerEditModeDecisions(${i})">Done editing</button>
+             </div>`;
+        return `
+          <div class="comp-card ${isOpen ? 'open' : ''}" id="blk-dec-${i}">
+            <div class="comp-card-header" onclick="toggleBlockerDecCard(${i})">
+              <span class="status-label sl-done">Resolved</span>
+              <div style="flex:1;min-width:0">
+                <div class="card-title">${escH(bTitle(q))}</div>
+                ${bDesc(q) ? `<div class="card-desc">${escH(bDesc(q))}</div>` : ''}
+              </div>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
+          </div>`;
+      }).join('');
 
   const decFilterBar = `<div class="filter-bar" style="margin-bottom:0">
     <button class="filter-btn ${decisionsFilter==='all'?'active':''}" onclick="setDecisionsFilter('all')">All</button>
     <button class="filter-btn ${decisionsFilter==='components'?'active':''}" onclick="setDecisionsFilter('components')">Components (${compTotal})</button>
     <button class="filter-btn ${decisionsFilter==='audit'?'active':''}" onclick="setDecisionsFilter('audit')">Audit Decisions (${s.total})</button>
+    <button class="filter-btn ${decisionsFilter==='blockers'?'active':''}" onclick="setDecisionsFilter('blockers')">Resolved Blockers (${resolvedBlockers.length})</button>
   </div>`;
 
   el.innerHTML = `
@@ -2414,6 +2640,13 @@ function renderDecisionsSummary() {
     ${(decisionsFilter === 'all' || decisionsFilter === 'audit') ? `
       <div class="section-label" style="margin-bottom:10px">Audit Decisions — ${s.total} of 22</div>
       ${auditSection}` : ''}
+    ${decisionsFilter === 'all' && (s.total > 0 || resolvedBlockers.length > 0) ? `
+      <div style="border-top:2px solid var(--border);margin:36px 0 28px"></div>` : ''}
+    ${(decisionsFilter === 'all' || decisionsFilter === 'blockers') ? `
+      <div class="section-label" style="margin-bottom:10px">Resolved Blockers — ${resolvedBlockers.length} of ${BLOCKERS.length}
+        <span class="comp-summary-link" style="margin-left:12px" onclick="switchTabByName('blockers')">Go to Blockers →</span>
+      </div>
+      ${resolvedBlockerSection}` : ''}
   `;
 }
 
@@ -2441,15 +2674,16 @@ function renderDeferredCompCard(type, id, name, cat, label) {
       <textarea class="notes-input" style="min-height:48px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${id}', ${i}, this.value)">${escH(v.notes)}</textarea>
     </div>`).join('') : '';
 
+  const isOpen = openDeferredCards.has(id);
   return `
-    <div class="comp-card open" style="margin-bottom:12px">
-      <div class="comp-card-header" style="cursor:default">
-        <span class="status-dot status-deferred"></span>
+    <div class="comp-card ${isOpen ? 'open' : ''}" style="margin-bottom:12px" id="deferred-${id}">
+      <div class="comp-card-header" onclick="toggleDeferredCard('${id}')">
+        <span class="status-label sl-deferred">Deferred</span>
         <span class="comp-card-name">${escH(name)}</span>
-        <span class="comp-badge comp-deferred">${escH(label)}</span>
-        <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:8px">${escH(cat)}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto">${escH(label)} · ${escH(cat)}</span>
+        <span class="comp-chevron">▶</span>
       </div>
-      <div class="comp-card-body">
+      <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
         <div class="notes-label" style="margin-top:14px">Notes</div>
         <textarea class="notes-input" placeholder="Add feedback or notes before restoring…" oninput="updateOrgNotes('${id}', this.value)">${escH(data.notes || '')}</textarea>
         ${variantsHtml ? `<div class="variants-header"><div class="notes-label" style="margin:0">Variants</div></div>${variantsHtml}` : ''}
@@ -2498,22 +2732,41 @@ function openGridModal(tier, id) {
 
   const typesHtml = types ? `<div class="notes-label" style="margin-top:12px">Types / States</div><div class="type-chips">${types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>` : '';
 
+  const isEditing = editingCards.has(id);
+  const ro = (data.status === 'done' || data.status === 'deferred') && !isEditing;
+
+  let modalBody;
+  if (ro) {
+    const notesRo = data.notes
+      ? `<div class="notes-label" style="margin-top:${typesHtml ? '4px' : '14px'}">Notes</div><p class="ro-text">${escH(data.notes)}</p>`
+      : `<span class="ro-empty">No notes added yet.</span>`;
+    const variantsRo = data.variants
+      ? `<div class="notes-label" style="margin-top:12px">Variants (${data.variants.length})</div>${data.variants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}`
+      : '';
+    modalBody = `${typesHtml}${notesRo}${variantsRo}
+      <div class="comp-card-actions" style="margin-top:16px">
+        <button class="comp-unmark-btn" onclick="setCompStatus('${tier}','${id}','todo');_closeModal()">${data.status === 'deferred' ? 'Restore' : 'Unmark'}</button>
+        <button class="comp-mark-btn" onclick="toggleEditModeModal('${tier}','${id}')">Edit</button>
+      </div>`;
+  } else {
+    modalBody = `${typesHtml}
+      <div class="notes-label" style="margin-top:${typesHtml ? '0' : '4px'}">Notes</div>
+      <textarea class="notes-input" style="min-height:80px" placeholder="Describe this component…" oninput="updateModalNotes('${tier}','${id}',this.value)">${escH(data.notes || '')}</textarea>
+      ${variantsHtml}
+      <div class="comp-card-actions" style="margin-top:16px">
+        ${actionsHtml(tier, id, data.status, tier.startsWith('custom'))}
+      </div>`;
+  }
+
   content.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-      <span class="status-dot status-${data.status}"></span>
-      <div>
-        <div style="font-size:17px;font-weight:700;color:var(--text)">${escH(name)}</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px">${escH(cat)}</div>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px">
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:var(--text);line-height:1.3">${escH(name)}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:4px">${escH(cat)}</div>
       </div>
-      <span class="comp-badge comp-${data.status}" style="margin-left:auto">${statusLabel(data.status)}</span>
+      <span class="status-label sl-${data.status}">${statusLabel(data.status)}</span>
     </div>
-    ${typesHtml}
-    <div class="notes-label" style="margin-top:${typesHtml ? '0' : '4px'}">Notes</div>
-    <textarea class="notes-input" style="min-height:80px" placeholder="Describe this component…" oninput="updateModalNotes('${tier}','${id}',this.value)">${escH(data.notes || '')}</textarea>
-    ${variantsHtml}
-    <div class="comp-card-actions" style="margin-top:16px">
-      ${actionsHtml(tier, id, data.status, tier.startsWith('custom'))}
-    </div>`;
+    ${modalBody}`;
 
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -2542,8 +2795,10 @@ function _closeModal() {
   document.getElementById('comp-modal').style.display = 'none';
   document.body.style.overflow = '';
   const y = window.scrollY;
-  renderCompTab();
-  updateCompProgress();
+  if (activeTab === 'components')  { renderCompTab(); updateCompProgress(); }
+  else if (activeTab === 'audit')      renderCards();
+  else if (activeTab === 'blockers')   renderBlockers();
+  else if (activeTab === 'decisions')  renderDecisionsSummary();
   window.scrollTo(0, y);
 }
 
@@ -2705,7 +2960,7 @@ let compState = loadComp();
 function saveComp() { localStorage.setItem(COMP_KEY, JSON.stringify(compState)); }
 
 let activeCompTab = 'organisms';
-let compListMode = 'grid';
+let compListMode = 'list';
 let openCompCards = new Set(JSON.parse(localStorage.getItem(COMP_OPEN_KEY) || '[]'));
 function saveOpen() { localStorage.setItem(COMP_OPEN_KEY, JSON.stringify([...openCompCards])); }
 if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
@@ -2783,6 +3038,12 @@ function statusLabel(s) {
   return 'Not started';
 }
 
+// Push deferred items to the bottom of a section without removing them
+function sortDeferred(arr, getStatus) {
+  const fn = getStatus || (x => x.status || 'todo');
+  return [...arr.filter(x => fn(x) !== 'deferred'), ...arr.filter(x => fn(x) === 'deferred')];
+}
+
 // ─────────────────────────────────────────────
 // COMPONENTS — Render
 // ─────────────────────────────────────────────
@@ -2804,13 +3065,14 @@ function renderCompTab() {
 
 // ── Shared card-action buttons ──
 function actionsHtml(type, id, status, isCustom) {
-  const ready  = `<button class="comp-mark-btn" onclick="setCompStatus('${type}','${id}','done')">Mark as ready</button>`;
-  const unmark = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Unmark</button>`;
-  const defer  = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','deferred')" style="color:var(--muted)">Defer</button>`;
-  const restore= `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Restore</button>`;
-  const del    = isCustom ? `<button class="delete-item-btn" onclick="deleteCustomItem('${type}','${id}')">✕ Delete</button>` : '';
-  if (status === 'done')     return `${del}${unmark}`;
-  if (status === 'deferred') return `${del}${restore}`;
+  const ready      = `<button class="comp-mark-btn" onclick="setCompStatus('${type}','${id}','done')">Mark as ready</button>`;
+  const unmark     = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Unmark</button>`;
+  const doneEditing= `<button class="comp-mark-btn" onclick="toggleEditMode('${id}')">Done editing</button>`;
+  const defer      = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','deferred')" style="color:var(--muted)">Deferred</button>`;
+  const restore    = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Restore</button>`;
+  const del        = isCustom ? `<button class="delete-item-btn" onclick="deleteCustomItem('${type}','${id}')">✕ Delete</button>` : '';
+  if (status === 'done')     return `${del}${unmark}${doneEditing}`;
+  if (status === 'deferred') return `${del}${restore}${doneEditing}`;
   return `${del}${defer}${ready}`;
 }
 
@@ -2846,27 +3108,38 @@ function renderOrganisms() {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
-      items.forEach(def => {
+      sortDeferred(items, def => compState.organisms?.[def.id]?.status || 'todo').forEach(def => {
         const s = compState.organisms?.[def.id]?.status || 'todo';
         html += gridTile(def.id, def.name, cat, s, false, 'org');
       });
-      custom.forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-org'));
+      sortDeferred(custom).forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-org'));
       html += `</div>`;
     });
   } else {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
-      const allItems = items;
-      const done = allItems.filter(i => compState.organisms?.[i.id]?.status === 'done').length
+      const allItems = sortDeferred(items, def => compState.organisms?.[def.id]?.status || 'todo');
+      const done = items.filter(i => compState.organisms?.[i.id]?.status === 'done').length
                  + custom.filter(c => c.status === 'done').length;
-      const total = allItems.length + custom.length;
+      const total = items.length + custom.length;
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
         <span>${escH(cat)} — ${done}/${total}</span>
         <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button>
       </div>`;
-      allItems.forEach(def => {
+      allItems.forEach(def => {   // already sorted: deferred pushed to bottom
         const d = getOrgData(def.id);
         const isOpen = openCompCards.has(def.id);
+        const isEditing = editingCards.has(def.id);
+        const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
+        const bodyHtml = ro
+          ? `${d.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${d.variants.length ? `<div class="notes-label" style="margin-top:12px">Variants (${d.variants.length})</div>${d.variants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : ''}
+             <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('org','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
+          : `<div class="notes-label" style="margin-top:14px">Component Notes</div>
+             <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior, Vast-specific constraints…" oninput="updateOrgNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+             <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${d.variants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addVariant('${def.id}')">+</button><button class="variant-btn" onclick="removeVariant('${def.id}')">−</button></div></div>
+             ${d.variants.map((v, i) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${i + 1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateVariantName('${def.id}', ${i}, this.value)"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${def.id}', ${i}, this.value)">${escH(v.notes)}</textarea></div>`).join('')}
+             <div class="comp-card-actions">${actionsHtml('org', def.id, d.status, false)}</div>`;
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
@@ -2874,30 +3147,19 @@ function renderOrganisms() {
               <span class="comp-card-name">${escH(def.name)}</span>
               <span class="comp-chevron">▶</span>
             </div>
-            <div class="comp-card-body ${isOpen ? '' : 'hidden'}" id="ccb-${def.id}">
-              <div class="notes-label" style="margin-top:14px">Component Notes</div>
-              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior, Vast-specific constraints…" oninput="updateOrgNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
-              <div class="variants-header">
-                <div class="notes-label" style="margin:0">Variants (${d.variants.length})</div>
-                <div class="variant-controls">
-                  <button class="variant-btn" onclick="addVariant('${def.id}')">+</button>
-                  <button class="variant-btn" onclick="removeVariant('${def.id}')">−</button>
-                </div>
-              </div>
-              ${d.variants.map((v, i) => `
-                <div class="variant-item">
-                  <div class="variant-name-row">
-                    <span class="variant-num">${i + 1}</span>
-                    <input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateVariantName('${def.id}', ${i}, this.value)">
-                  </div>
-                  <textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${def.id}', ${i}, this.value)">${escH(v.notes)}</textarea>
-                </div>`).join('')}
-              <div class="comp-card-actions">${actionsHtml('org', def.id, d.status, false)}</div>
-            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}" id="ccb-${def.id}">${bodyHtml}</div>
           </div>`;
       });
-      custom.forEach(c => {
+      sortDeferred(custom).forEach(c => {
         const isOpen = openCompCards.has(c.id);
+        const isEditing = editingCards.has(c.id);
+        const ro = (c.status === 'done' || c.status === 'deferred') && !isEditing;
+        const bodyHtml = ro
+          ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-org','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
+          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+             <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="comp-card-actions">${actionsHtml('custom-org', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
@@ -2908,11 +3170,7 @@ function renderOrganisms() {
               <span class="custom-label">Custom</span>
               <span class="comp-chevron">▶</span>
             </div>
-            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-              <div class="notes-label" style="margin-top:14px">Notes</div>
-              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
-              <div class="comp-card-actions">${actionsHtml('custom-org', c.id, c.status, true)}</div>
-            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
           </div>`;
       });
     });
@@ -2930,24 +3188,38 @@ function renderMolecules() {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('molecules','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
-      items.forEach(def => {
+      sortDeferred(items, def => compState.molecules?.[def.id]?.status || 'todo').forEach(def => {
         const s = compState.molecules?.[def.id]?.status || 'todo';
         html += gridTile(def.id, def.name, cat, s, false, 'mol');
       });
-      custom.forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-mol'));
+      sortDeferred(custom).forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-mol'));
       html += `</div>`;
     });
   } else {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
       const done = items.filter(i => compState.molecules?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
+      const sortedMolItems = sortDeferred(items, def => compState.molecules?.[def.id]?.status || 'todo');
+      const sortedMolCustom = sortDeferred(custom);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
         <span>${escH(cat)} — ${done}/${items.length + custom.length}</span>
         <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('molecules','${escH(cat)}')">+ Add</button>
       </div>`;
-      items.forEach(def => {
+      sortedMolItems.forEach(def => {
         const d = getMolData(def.id);
         const isOpen = openCompCards.has(def.id);
+        const isEditing = editingCards.has(def.id);
+        const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
+        const bodyHtml = ro
+          ? `<div class="notes-label" style="margin-top:14px">Types / States</div>
+             <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
+             ${d.notes ? `<div class="notes-label" style="margin-top:4px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('mol','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
+          : `<div class="notes-label" style="margin-top:12px">Types / States</div>
+             <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
+             <div class="notes-label">Notes</div>
+             <textarea class="notes-input" style="min-height:64px" placeholder="Types, states, rules, visual constraints…" oninput="updateMolNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+             <div class="comp-card-actions">${actionsHtml('mol', def.id, d.status, false)}</div>`;
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
@@ -2955,33 +3227,30 @@ function renderMolecules() {
               <span class="comp-card-name">${escH(def.name)}</span>
               <span class="comp-chevron">▶</span>
             </div>
-            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-              <div class="notes-label" style="margin-top:12px">Types / States</div>
-              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
-              <div class="notes-label">Notes</div>
-              <textarea class="notes-input" style="min-height:64px" placeholder="Types, states, rules, visual constraints…" oninput="updateMolNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
-              <div class="comp-card-actions">${actionsHtml('mol', def.id, d.status, false)}</div>
-            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
           </div>`;
       });
-      custom.forEach(c => {
+      sortedMolCustom.forEach(c => {
         const isOpen = openCompCards.has(c.id);
+        const isEditing = editingCards.has(c.id);
+        const ro = (c.status === 'done' || c.status === 'deferred') && !isEditing;
+        const bodyHtml = ro
+          ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-mol','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
+          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+             <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('molecules','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="comp-card-actions">${actionsHtml('custom-mol', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
-              <span class="status-dot status-${c.status}"></span>
+              <span class="status-label sl-${c.status}">${statusLabel(c.status)}</span>
               <input type="text" value="${escH(c.name)}" placeholder="Component name"
                 style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
                 oninput="updateCustomName('molecules','${c.id}',this.value)">
               <span class="custom-label">Custom</span>
-              <span class="comp-badge comp-${c.status}" style="margin-left:8px">${statusLabel(c.status)}</span>
               <span class="comp-chevron">▶</span>
             </div>
-            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-              <div class="notes-label" style="margin-top:14px">Notes</div>
-              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('molecules','${c.id}',this.value)">${escH(c.notes)}</textarea>
-              <div class="comp-card-actions">${actionsHtml('custom-mol', c.id, c.status, true)}</div>
-            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
           </div>`;
       });
     });
@@ -2999,24 +3268,34 @@ function renderAtoms() {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('atoms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
-      items.forEach(def => {
+      sortDeferred(items, def => compState.atoms?.[def.id]?.status || 'todo').forEach(def => {
         const s = compState.atoms?.[def.id]?.status || 'todo';
         html += gridTile(def.id, def.name, cat, s, false, 'atom');
       });
-      custom.forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-atom'));
+      sortDeferred(custom).forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-atom'));
       html += `</div>`;
     });
   } else {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
       const done = items.filter(i => compState.atoms?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
+      const sortedAtomItems = sortDeferred(items, def => compState.atoms?.[def.id]?.status || 'todo');
+      const sortedAtomCustom = sortDeferred(custom);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
         <span>${escH(cat)} — ${done}/${items.length + custom.length}</span>
         <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('atoms','${escH(cat)}')">+ Add</button>
       </div>`;
-      items.forEach(def => {
+      sortedAtomItems.forEach(def => {
         const d = getAtomData(def.id);
         const isOpen = openCompCards.has(def.id);
+        const isEditing = editingCards.has(def.id);
+        const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
+        const bodyHtml = ro
+          ? `${d.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('atom','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
+          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+             <textarea class="notes-input" style="min-height:56px" placeholder="Values, rules, decisions, constraints…" oninput="updateAtomNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+             <div class="comp-card-actions">${actionsHtml('atom', def.id, d.status, false)}</div>`;
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
@@ -3024,31 +3303,30 @@ function renderAtoms() {
               <span class="comp-card-name">${escH(def.name)}</span>
               <span class="comp-chevron">▶</span>
             </div>
-            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-              <div class="notes-label" style="margin-top:14px">Notes</div>
-              <textarea class="notes-input" style="min-height:56px" placeholder="Values, rules, decisions, constraints…" oninput="updateAtomNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
-              <div class="comp-card-actions">${actionsHtml('atom', def.id, d.status, false)}</div>
-            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
           </div>`;
       });
-      custom.forEach(c => {
+      sortedAtomCustom.forEach(c => {
         const isOpen = openCompCards.has(c.id);
+        const isEditing = editingCards.has(c.id);
+        const ro = (c.status === 'done' || c.status === 'deferred') && !isEditing;
+        const bodyHtml = ro
+          ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-atom','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
+          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+             <textarea class="notes-input" placeholder="Describe this element…" oninput="updateCustomNotes('atoms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="comp-card-actions">${actionsHtml('custom-atom', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
-              <span class="status-dot status-${c.status}"></span>
+              <span class="status-label sl-${c.status}">${statusLabel(c.status)}</span>
               <input type="text" value="${escH(c.name)}" placeholder="Token / element name"
                 style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
                 oninput="updateCustomName('atoms','${c.id}',this.value)">
               <span class="custom-label">Custom</span>
-              <span class="comp-badge comp-${c.status}" style="margin-left:8px">${statusLabel(c.status)}</span>
               <span class="comp-chevron">▶</span>
             </div>
-            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-              <div class="notes-label" style="margin-top:14px">Notes</div>
-              <textarea class="notes-input" placeholder="Describe this element…" oninput="updateCustomNotes('atoms','${c.id}',this.value)">${escH(c.notes)}</textarea>
-              <div class="comp-card-actions">${actionsHtml('custom-atom', c.id, c.status, true)}</div>
-            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
           </div>`;
       });
     });

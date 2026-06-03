@@ -96,11 +96,109 @@ No Terminal needed.
 
 ---
 
-## What's Next (pick up in component checklist chat)
-- Add Components tab from `antinomy-brief-checklist.md` ✓ Done
-- Rebuild Dashboard as project-level progress tracker
-- Add "Generate Figma Brief" button to Brief tab
+## What's Next
+- Add "Generate Figma Brief" button to Brief tab (currently shows a "Copy to Clipboard" button)
 - Eventually: push final brief into a Figma board via Claude + Figma MCP
+- Share tool with James for parallel review using the Export/Import workflow
+
+---
+
+## Tool UI System — Card Behavior (June 2026)
+
+This section documents how cards work across every tab so future Claude sessions don't have to reverse-engineer it.
+
+### View modes
+- **Default:** List view on all tabs (changed from grid)
+- **List view:** cards expand and collapse in place (accordion)
+- **Grid view:** clicking a tile opens a modal
+- This rule is consistent across every tab — no exceptions
+
+### Status label system
+All status badges use the `.status-label.sl-*` CSS class. Never use the old `.badge.d-*` or `.comp-badge.comp-*` systems. The complete set:
+
+**Component / Blocker states:**
+- `sl-todo` → "Not started"
+- `sl-progress` → "In progress"
+- `sl-done` → "Ready"
+- `sl-deferred` → "Deferred"
+
+**Audit states:**
+- `sl-undecided` → "Not Started"
+- `sl-keep` → "Keep / Evolve"
+- `sl-cut` → "Cut"
+- `sl-defer` → "Deferred"
+
+**Blocker resolved state:**
+- `sl-done` → "Resolved"
+
+### Card state machines
+
+**Components (Organisms / Molecules / Atoms):**
+1. **Not started** → editable form, "Mark as ready" button at the bottom
+2. **In progress** → same editable form (auto-set when notes are typed)
+3. **Deferred** → immediately read-only; "Restore" + "Edit" buttons; sorted to bottom of section
+4. **Ready** → read-only showing notes, variants, types; "Unmark" + "Edit" buttons
+5. **Editing a ready/deferred card** → full editable form + "Done editing" button
+
+**Audit Feedback:**
+1. **Not Started** → editable — shows screenshot, hint box, stakeholder comments, then Notes textarea, then decision buttons at the bottom
+2. **Decided (Keep/Cut/Deferred)** → clicking a decision button immediately locks the card to read-only. The decision IS the final action — no separate "Mark as ready" step.
+3. **Read-only** → shows all reference material (screenshot, hint, comments) + notes; "Edit" button only
+4. **Editing** → full editable form + "Done editing" button to re-lock
+5. Toggle off: clicking the currently-selected decision button sets it back to undecided and keeps the card editable
+
+**Blockers (Strategic Open Decisions):**
+1. **Not started** → editable textarea for answer + "Mark resolved" button
+2. **In progress** → same (auto-set when answer is typed)
+3. **Resolved** → read-only showing the answer text; "Mark unresolved" + "Edit" buttons
+4. **Editing a resolved card** → editable textarea + "Mark unresolved" + "Done editing"
+
+### Deferred items behavior
+- Deferred items are **not** visually dimmed — opacity reduction was removed
+- They are sorted to the **bottom of their category section** automatically
+- This applies to all three component tiers (Organisms, Molecules, Atoms)
+- In the Blockers tab, deferred component items appear in their own "Deferred Components" sub-section
+
+### Modal close behavior
+`_closeModal()` is tab-aware — it re-renders whichever tab is currently active (not always Components). This ensures the list/grid view stays in sync after closing a modal from any tab.
+
+---
+
+## Decisions Tab — Section Structure
+
+The Decisions tab has three sections, each with a filter:
+
+1. **Components Ready** — items marked "Ready" across Organisms, Molecules, Atoms. Each category (Organisms/Molecules/Atoms) has its own sub-header with a "Go to Components →" link. Cards are read-only, expand to show notes/variants/types.
+
+2. **Audit Decisions** — all audit items with a decision made (Keep/Cut/Deferred). Uses identical card logic to the Audit Feedback tab — same read-only/edit states, same content structure.
+
+3. **Resolved Blockers** — Strategic Open Decisions marked as resolved in the Blockers tab. Shows the question title, description, and recorded answer in read-only. "Edit" to modify the answer while keeping it resolved.
+
+Filter buttons: All | Components | Audit Decisions | Resolved Blockers
+
+---
+
+## Visual System Decisions (June 2026)
+
+### Color tokens
+```css
+--defer:     #2563eb;           /* blue — changed from amber #b45309 */
+--defer-dim: rgba(37,99,235,0.08);
+```
+All "deferred" states across the tool use this blue. Previously the component "deferred" state used a separate slate-blue (`#64748b`) — that has been unified.
+
+### Copy standards
+| Old | New |
+|---|---|
+| "Defer" | "Deferred" |
+| "Undecided" | "Not Started" |
+| "Notes / Refinements" | "Notes" |
+| "chars" | "characters" |
+
+These apply everywhere in the UI — filter buttons, status badges, action buttons, score boxes.
+
+### Blocker descriptions
+All Strategic Open Decision descriptions use sentence case (capitalised first word). They are displayed at the top level of the list card header — visible without expanding — using `.card-title` and `.card-desc` CSS classes.
 
 ---
 
