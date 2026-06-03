@@ -131,9 +131,7 @@ body {
 
 /* ── Layout ── */
 .content {
-  max-width: 840px;
-  margin: 0 auto;
-  padding: 32px 28px 100px;
+  padding: 36px 48px 80px;
 }
 
 .view { display: none; }
@@ -626,6 +624,392 @@ body {
 
 .sync-btn:hover { color: var(--text); border-color: var(--text); }
 
+/* ── Components tab ── */
+.comp-subtabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.comp-subtab {
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.comp-subtab:hover { color: var(--text); background: var(--surface2); }
+.comp-subtab.active { background: var(--text); color: #FFF; border-color: var(--text); }
+.comp-view { display: none; }
+.comp-view.active { display: block; }
+
+/* Component progress bar */
+.comp-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.comp-prog-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  min-width: 100px;
+}
+.comp-prog-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.comp-prog-fill {
+  height: 100%;
+  background: var(--keep);
+  border-radius: 2px;
+  transition: width 0.4s;
+}
+.comp-prog-pct {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* Component card */
+.comp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-sm);
+}
+.comp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+  user-select: none;
+}
+.comp-card-header:hover { background: var(--bg); }
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.status-todo     { background: var(--border); }
+.status-progress { background: #f59e0b; }
+.status-done     { background: var(--keep); }
+.comp-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  color: var(--text);
+}
+.comp-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.comp-todo     { background: var(--surface2); color: var(--muted); }
+.comp-progress { background: rgba(245,158,11,0.1); color: #b45309; }
+.comp-done     { background: var(--keep-dim); color: var(--keep); }
+.comp-chevron {
+  color: var(--faint);
+  font-size: 9px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.comp-card.open .comp-chevron { transform: rotate(90deg); }
+.comp-card-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+.comp-card-body.hidden { display: none; }
+
+/* Variants */
+.variants-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+.variant-controls {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.variant-btn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: var(--text);
+  transition: background 0.12s;
+  font-family: inherit;
+}
+.variant-btn:hover { background: var(--border); }
+.variant-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+.variant-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.variant-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+  min-width: 14px;
+  letter-spacing: 0.04em;
+}
+.variant-name-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.variant-name-input:focus { border-color: var(--orange); }
+
+/* Types chips */
+.type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0 14px;
+}
+.type-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+}
+
+/* Card actions */
+.comp-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+  gap: 8px;
+}
+.comp-mark-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: var(--text);
+  color: #fff;
+  transition: opacity 0.15s;
+}
+.comp-mark-btn:hover { opacity: 0.8; }
+.comp-unmark-btn {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.comp-unmark-btn:hover { background: var(--border); color: var(--text); }
+
+/* ── Deferred item ── */
+.status-deferred { background: #94a3b8; }
+.comp-card.deferred { opacity: 0.65; }
+.comp-card.deferred .comp-card-name { text-decoration: line-through; }
+.comp-deferred { background: rgba(148,163,184,0.12); color: #64748b; }
+
+/* ── Custom item ── */
+.comp-card.custom-item { border-left: 3px solid var(--orange) !important; }
+.custom-label { font-family: var(--mono); font-size: 9px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── Add item button ── */
+.add-item-btn {
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  color: var(--muted); background: none; border: 1px dashed var(--border);
+  border-radius: var(--radius-sm); padding: 7px 14px; cursor: pointer;
+  transition: all 0.15s; text-transform: uppercase; margin-top: 6px; width: 100%;
+}
+.add-item-btn:hover { color: var(--orange); border-color: var(--orange); background: var(--orange-dim); }
+
+/* ── Delete custom item ── */
+.delete-item-btn {
+  padding: 4px 8px; background: none; border: 1px solid var(--cut-dim);
+  border-radius: var(--radius-sm); color: var(--cut); font-size: 11px;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.delete-item-btn:hover { background: var(--cut-dim); }
+
+/* ── Blockers tab ── */
+.blocker-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 8px; box-shadow: var(--shadow-sm);
+  transition: border-left-color 0.2s;
+}
+.blocker-card.resolved { border-left-color: var(--keep); }
+.blocker-question { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.blocker-answer {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+  padding: 8px 10px; resize: vertical; min-height: 52px; outline: none;
+  transition: border-color 0.15s; margin-bottom: 10px; display: block;
+}
+.blocker-answer:focus { border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-dim); }
+.blocker-answer::placeholder { color: var(--faint); }
+.blocker-resolve-btn {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: var(--radius-sm);
+  border: none; cursor: pointer; background: var(--keep-dim); color: var(--keep); transition: all 0.15s;
+}
+.blocker-resolve-btn:hover { background: var(--keep); color: #fff; }
+.blocker-resolve-btn.undo { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+.blocker-resolve-btn.undo:hover { background: var(--border); color: var(--text); }
+.deferred-ref-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 6px; font-size: 13px; color: var(--text);
+}
+.deferred-ref-row .ref-link {
+  margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--muted);
+  text-decoration: none; cursor: pointer; transition: color 0.15s;
+}
+.deferred-ref-row .ref-link:hover { color: var(--orange); }
+
+/* ── Dashboard stat grid ── */
+.dash-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.dash-stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--border);
+  border-radius: var(--radius); padding: 22px 20px 18px;
+  cursor: pointer; transition: background 0.12s, border-top-color 0.15s;
+  box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 4px;
+}
+.dash-stat-card:hover { background: var(--bg); }
+.dash-stat-card.c-audit    { border-top-color: var(--evolve); }
+.dash-stat-card.c-org      { border-top-color: var(--orange); }
+.dash-stat-card.c-mol      { border-top-color: var(--defer); }
+.dash-stat-card.c-atom     { border-top-color: var(--keep); }
+.dash-stat-card.c-blockers { border-top-color: #6366f1; }
+.dash-stat-num {
+  font-family: var(--mono); font-size: 44px; font-weight: 700; line-height: 1;
+  color: var(--text); margin-bottom: 2px;
+}
+.dash-stat-denom { font-family: var(--mono); font-size: 16px; color: var(--muted); font-weight: 400; }
+.dash-stat-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted); margin-top: 6px;
+}
+.dash-stat-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+.dash-stat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+.fill-audit    { background: var(--evolve); }
+.fill-org      { background: var(--orange); }
+.fill-mol      { background: var(--defer); }
+.fill-atom     { background: var(--keep); }
+.fill-blockers { background: #6366f1; }
+.dash-overall {
+  margin-bottom: 0; padding: 20px 24px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+}
+.dash-overall-label { font-family: var(--mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+.dash-overall-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.dash-overall-fill { height: 100%; background: linear-gradient(90deg, var(--evolve), var(--keep)); border-radius: 4px; transition: width 0.4s; }
+.dash-overall-pct { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--text); }
+
+/* ── Sticky footer ── */
+body { display: flex; flex-direction: column; min-height: 100vh; }
+.content { flex: 1; }
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface3);
+  flex-shrink: 0;
+}
+.footer-name {
+  font-family: var(--mono); font-size: 11px; color: var(--faint);
+  letter-spacing: 0.06em; text-transform: uppercase; flex: 1;
+}
+.footer-sync { display: flex; gap: 4px; }
+
+/* ── Comp grid view ── */
+.comp-grid-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.comp-grid-tile {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px; cursor: pointer; transition: background 0.12s; box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 6px; min-height: 80px;
+}
+.comp-grid-tile:hover { background: var(--bg); }
+.comp-grid-tile.custom-item { border-left: 3px solid var(--orange); }
+.comp-grid-tile.deferred { opacity: 0.5; }
+.comp-grid-tile-top { display: flex; align-items: center; gap: 8px; }
+.comp-grid-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.3; }
+.comp-grid-cat { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.04em; }
+
+/* ── Comp summary (in Decisions) ── */
+.comp-summary-block { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.comp-summary-link { font-family: var(--mono); font-size: 10px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; float: right; margin-top: 2px; }
+.comp-summary-link:hover { color: var(--orange); }
+.comp-summary-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.comp-summary-row:last-child { border-bottom: none; }
+
 /* ── Empty state ── */
 .empty {
   text-align: center;
@@ -675,94 +1059,82 @@ body {
 <!-- Header -->
 <div class="header">
   <img src="Vast_Wordmark_Meteorite_Black_RGB.png" alt="Vast" style="height:18px;display:block;">
-  <div class="header-divider">|</div>
-  <div class="header-sub">Website Refresh — Brief Builder</div>
-
   <div class="tabs">
     <button class="tab active" onclick="switchTab('dashboard', this)">Dashboard</button>
+    <button class="tab" onclick="switchTab('audit', this)">Audit Feedback</button>
+    <button class="tab" onclick="switchTab('components', this)">Components</button>
     <button class="tab" onclick="switchTab('decisions', this)">Decisions</button>
-    <button class="tab" onclick="switchTab('brief', this)">Brief</button>
+    <button class="tab" onclick="switchTab('blockers', this)">Blockers</button>
   </div>
+  <button class="copy-btn" style="margin-left:auto;padding:6px 16px;font-size:12px;border-radius:20px" onclick="openBrief()">Generate Brief →</button>
 
-  <div class="header-right">
-    <div class="sync-btns">
-      <button class="sync-btn" onclick="exportNotes()" title="Download your notes as a file to share">↓ Export</button>
-      <label class="sync-btn" title="Load notes from a file someone shared with you">↑ Import<input type="file" accept=".json" style="display:none" onchange="importNotes(this)"></label>
-    </div>
-    <div class="progress-text" id="prog-text">0 of 22 decided</div>
-    <div class="progress-bar-wrap">
-      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
-    </div>
-  </div>
 </div>
 
 <!-- Content -->
 <div class="content">
 
-  <!-- DASHBOARD -->
+  <!-- DASHBOARD (aggregate) -->
   <div class="view active" id="view-dashboard">
-    <div class="scorecard">
-      <div class="score-box s-total">
-        <div class="score-num" id="sc-total">0</div>
-        <div class="score-label">Decided</div>
-      </div>
-      <div class="score-box s-keep">
-        <div class="score-num" id="sc-keep">0</div>
-        <div class="score-label">Keep / Evolve</div>
-      </div>
-      <div class="score-box s-cut">
-        <div class="score-num" id="sc-cut">0</div>
-        <div class="score-label">Cut</div>
-      </div>
-      <div class="score-box s-defer">
-        <div class="score-num" id="sc-defer">0</div>
-        <div class="score-label">Defer</div>
-      </div>
-    </div>
+    <div id="new-dash-content"></div>
+  </div>
 
-    <div class="key">
-      <div class="key-item">
-        <span class="key-dot" style="background:var(--keep)"></span>
-        <span><strong>Keep / Evolve</strong> — stays in scope, with or without iteration</span>
+  <!-- AUDIT FEEDBACK -->
+  <div class="view" id="view-audit">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="filter-bar" id="filter-bar" style="margin-bottom:0">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All (22)</button>
+        <button class="filter-btn" onclick="setFilter('undecided', this)">Undecided</button>
+        <button class="filter-btn" onclick="setFilter('keep', this)">Keep / Evolve</button>
+        <button class="filter-btn" onclick="setFilter('cut', this)">Cut</button>
+        <button class="filter-btn" onclick="setFilter('defer', this)">Defer</button>
       </div>
-      <div class="key-item">
-        <span class="key-dot" style="background:var(--cut)"></span>
-        <span><strong>Cut</strong> — remove entirely, not needed for launch</span>
-      </div>
-      <div class="key-item">
-        <span class="key-dot" style="background:var(--defer)"></span>
-        <span><strong>Defer</strong> — good idea, revisit after launch</span>
-      </div>
-      <div class="key-item">
-        <span class="key-dot" style="background:var(--border)"></span>
-        <span><strong>Undecided</strong> — needs a decision before briefing Antinomy</span>
-      </div>
-    </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div class="section-label" style="margin-bottom:0">All 22 Items — click any to open</div>
       <div class="view-toggle">
-        <button class="vtoggle active" id="vt-list" onclick="setDashView('list')" title="List view">
+        <button class="vtoggle" id="af-list-btn" onclick="setListView('audit','list')" title="List view">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
         </button>
-        <button class="vtoggle" id="vt-grid" onclick="setDashView('grid')" title="Grid view">
+        <button class="vtoggle active" id="af-grid-btn" onclick="setListView('audit','grid')" title="Grid view">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
         </button>
       </div>
     </div>
-    <div id="dash-list"></div>
+    <div id="cards-list"></div>
   </div>
 
-  <!-- DECISIONS -->
+  <!-- DECISIONS — read-only summary of what's been finalized -->
   <div class="view" id="view-decisions">
-    <div class="filter-bar" id="filter-bar">
-      <button class="filter-btn active" onclick="setFilter('all', this)">All (22)</button>
-      <button class="filter-btn" onclick="setFilter('undecided', this)">Undecided</button>
-      <button class="filter-btn" onclick="setFilter('keep', this)">Keep / Evolve</button>
-      <button class="filter-btn" onclick="setFilter('cut', this)">Cut</button>
-      <button class="filter-btn" onclick="setFilter('defer', this)">Defer</button>
+    <div id="decisions-content"></div>
+  </div>
+
+  <!-- BLOCKERS -->
+  <div class="view" id="view-blockers">
+    <div id="blockers-content"></div>
+  </div>
+
+  <!-- COMPONENTS -->
+  <div class="view" id="view-components">
+    <div class="comp-subtabs" style="justify-content:space-between;align-items:center">
+      <div style="display:flex;gap:4px">
+        <button class="comp-subtab active" onclick="switchCompTab('organisms', this)">Organisms</button>
+        <button class="comp-subtab" onclick="switchCompTab('molecules', this)">Molecules</button>
+        <button class="comp-subtab" onclick="switchCompTab('atoms', this)">Atoms</button>
+      </div>
+      <div class="view-toggle">
+        <button class="vtoggle" id="cv-list-btn" onclick="setCompView('list')" title="List view">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button class="vtoggle active" id="cv-grid-btn" onclick="setCompView('grid')" title="Grid view">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
+        </button>
+      </div>
     </div>
-    <div class="cards-list" id="cards-list"></div>
+    <div class="comp-progress-row">
+      <span class="comp-prog-label" id="comp-prog-label">0 of 0 ready</span>
+      <div class="comp-prog-track"><div class="comp-prog-fill" id="comp-prog-fill" style="width:0%"></div></div>
+      <span class="comp-prog-pct" id="comp-prog-pct">0%</span>
+    </div>
+    <div class="comp-view active" id="cv-organisms"></div>
+    <div class="comp-view" id="cv-molecules"></div>
+    <div class="comp-view" id="cv-atoms"></div>
   </div>
 
   <!-- BRIEF -->
@@ -774,6 +1146,23 @@ body {
     <div class="brief-box" id="brief-box"></div>
   </div>
 
+</div>
+
+<!-- Modal for grid tile expansion -->
+<div id="comp-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.45);overflow-y:auto" onclick="closeModal(event)">
+  <div id="comp-modal-box" style="background:var(--surface);border-radius:var(--radius);max-width:640px;margin:60px auto;padding:28px;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.18)" onclick="event.stopPropagation()">
+    <button onclick="_closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);line-height:1">×</button>
+    <div id="comp-modal-content"></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="site-footer">
+  <span class="footer-name">Vast — Website Refresh Brief Builder</span>
+  <div class="footer-sync">
+    <button class="sync-btn" onclick="exportNotes()" title="Download your notes as a file to share">↓ Export</button>
+    <label class="sync-btn" title="Load notes from a file someone shared with you">↑ Import<input type="file" accept=".json" style="display:none" onchange="importNotes(this)"></label>
+  </div>
 </div>
 
 <script>
@@ -1009,6 +1398,28 @@ let state = load();          // { [id]: { decision, notes, open } }
 let activeFilter = 'all';
 let activeTab = 'dashboard';
 let dashView = 'list';
+// Grid/list modes — default to grid
+const viewModes = { audit: 'grid', decisions: 'grid', blockers: 'grid' };
+
+// Blockers — strategic open decisions
+const BLOCKERS = [
+  'Type ramp — which 5 styles are the final set?',
+  'Deep dive model — Stripe (expand-in-place) or Apple (drill-down to new view)?',
+  'Video autoplay — yes or no? Affects video block and tab panel.',
+  'Accordion vs tabs — for specs and technical content?',
+  'Footer structure — which of the 4 current variants becomes the one?',
+  'Center-alignment — blanket rule or case-by-case?',
+  'Copy density — 150 chars confirmed for descriptions? Any exceptions?',
+  'Icon style — line weight, outline vs filled? Must be defined before icon set is built.',
+  'Breakpoints — mobile and tablet behavior not yet defined at all.',
+  'Dark mode — full dark mode or surface variants (dark sections) only?'
+];
+const BLOCKER_KEY = 'vast-blockers-v1';
+function loadBlockers() { try { return JSON.parse(localStorage.getItem(BLOCKER_KEY) || '[]'); } catch { return []; } }
+let blockerState = loadBlockers(); // [{ answer: '', resolved: false }, ...]
+// Ensure blocker state has an entry per blocker
+while (blockerState.length < BLOCKERS.length) blockerState.push({ answer: '', resolved: false });
+function saveBlockers() { localStorage.setItem(BLOCKER_KEY, JSON.stringify(blockerState)); }
 
 // ─────────────────────────────────────────────
 // STATS
@@ -1030,58 +1441,27 @@ function stats() {
 function refresh() {
   const s = stats();
   const pct = Math.round((s.total / 22) * 100);
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-text').textContent = s.total + ' of 22 decided';
+  // prog-fill / prog-text removed from header — skip gracefully
+  const pfill = document.getElementById('prog-fill');
+  const ptext = document.getElementById('prog-text');
+  if (pfill) pfill.style.width = pct + '%';
+  if (ptext) ptext.textContent = s.total + ' of 22 decided';
   document.getElementById('sc-total').textContent = s.total;
   document.getElementById('sc-keep').textContent = s.keep;
   document.getElementById('sc-cut').textContent = s.cut;
   document.getElementById('sc-defer').textContent = s.defer;
-  renderDash();
-  if (activeTab === 'decisions') renderCards();
-  if (activeTab === 'brief') renderBrief();
+  renderNewDashboard();
+  if (activeTab === 'audit')      { renderAuditDash(); renderCards(); }
+  if (activeTab === 'decisions')  renderDecisionsSummary();
+  if (activeTab === 'blockers')   renderBlockers();
+  if (activeTab === 'brief')      renderBrief();
 }
 
 // ─────────────────────────────────────────────
-// DASHBOARD
+// AUDIT FEEDBACK OVERVIEW
 // ─────────────────────────────────────────────
-function renderDash() {
-  const el = document.getElementById('dash-list');
-  const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
-
-  if (dashView === 'grid') {
-    el.className = 'dash-grid';
-    el.innerHTML = ITEMS.map(item => {
-      const d = state[item.id]?.decision || 'undecided';
-      return `
-        <div class="grid-card d-${d}" onclick="jumpTo(${item.id})">
-          <div class="grid-card-top">
-            <span class="grid-num">#${item.id}</span>
-            <span class="badge d-${d}">${labels[d]}</span>
-          </div>
-          <div class="grid-title">${item.title}</div>
-        </div>
-      `;
-    }).join('');
-  } else {
-    el.className = 'dash-list';
-    el.innerHTML = ITEMS.map(item => {
-      const d = state[item.id]?.decision || 'undecided';
-      return `
-        <div class="dash-row d-${d}" onclick="jumpTo(${item.id})">
-          <span class="badge d-${d}">${labels[d]}</span>
-          <span class="dash-name">${item.title}</span>
-          <span class="dash-num">#${item.id}</span>
-        </div>
-      `;
-    }).join('');
-  }
-}
-
-function setDashView(view) {
-  dashView = view;
-  document.getElementById('vt-list').classList.toggle('active', view === 'list');
-  document.getElementById('vt-grid').classList.toggle('active', view === 'grid');
-  renderDash();
+function renderAuditDash() {
+  // Scorecard numbers are updated by refresh() directly — nothing else needed here.
 }
 
 // ─────────────────────────────────────────────
@@ -1089,23 +1469,70 @@ function setDashView(view) {
 // ─────────────────────────────────────────────
 function renderCards() {
   const el = document.getElementById('cards-list');
-  const modules = ITEMS.filter(i => i.type === 'module');
-  const rules   = ITEMS.filter(i => i.type === 'rule');
+  if (!el) return;
+  const mode = viewModes.audit;
 
-  function section(items, label) {
-    const visible = items.filter(i => {
-      if (activeFilter === 'all') return true;
-      const d = state[i.id]?.decision || 'undecided';
-      return d === activeFilter;
-    });
-    if (!visible.length) return '';
-    return `<div class="section-divider">${label}</div>` + visible.map(card).join('');
+  const visible = ITEMS.filter(i => {
+    if (activeFilter === 'all') return true;
+    const d = state[i.id]?.decision || 'undecided';
+    return d === activeFilter;
+  });
+
+  if (!visible.length) {
+    el.innerHTML = `<div class="empty">No items match this filter.</div>`;
+    return;
   }
 
-  const html = section(modules, 'Specific Modules — Items 1–17') +
-               section(rules,   'General Rules — Items 18–22');
+  if (mode === 'grid') {
+    const modules = visible.filter(i => i.type === 'module');
+    const rules   = visible.filter(i => i.type === 'rule');
+    let html = '';
+    if (modules.length) {
+      html += `<div class="section-divider">Specific Modules — Items 1–17</div>
+        <div class="dash-grid">
+          ${modules.map(item => {
+            const d = state[item.id]?.decision || 'undecided';
+            const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
+            return `<div class="grid-card d-${d}" onclick="expandAuditCard(${item.id})">
+              <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-${d}">${labels[d]}</span></div>
+              <div class="grid-title">${item.title}</div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+    if (rules.length) {
+      html += `<div class="section-divider" style="margin-top:16px">General Rules — Items 18–22</div>
+        <div class="dash-grid">
+          ${rules.map(item => {
+            const d = state[item.id]?.decision || 'undecided';
+            const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
+            return `<div class="grid-card d-${d}" onclick="expandAuditCard(${item.id})">
+              <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-${d}">${labels[d]}</span></div>
+              <div class="grid-title">${item.title}</div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+    el.innerHTML = html;
+  } else {
+    const modules = visible.filter(i => i.type === 'module');
+    const rules   = visible.filter(i => i.type === 'rule');
+    let html = '';
+    if (modules.length) html += `<div class="section-divider">Specific Modules — Items 1–17</div>` + modules.map(card).join('');
+    if (rules.length)   html += `<div class="section-divider">General Rules — Items 18–22</div>` + rules.map(card).join('');
+    el.innerHTML = html;
+  }
+}
 
-  el.innerHTML = html || `<div class="empty">No items match this filter.</div>`;
+function expandAuditCard(id) {
+  // Switch to list view and open the card
+  setListView('audit', 'list');
+  setTimeout(() => {
+    if (!state[id]) state[id] = {};
+    state[id].open = true;
+    const el = document.getElementById('card-' + id);
+    if (el) { el.classList.add('open'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }, 40);
 }
 
 function card(item) {
@@ -1340,8 +1767,36 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + tab).classList.add('active');
   btn.classList.add('active');
-  if (tab === 'decisions') renderCards();
-  if (tab === 'brief')     renderBrief();
+  if (tab === 'dashboard')  renderNewDashboard();
+  if (tab === 'audit')      { renderAuditDash(); renderCards(); }
+  if (tab === 'decisions')  renderDecisionsSummary();
+  if (tab === 'blockers')   renderBlockers();
+  if (tab === 'brief')      { renderBrief(); }
+  if (tab === 'components') renderCompTab();
+}
+
+function openBrief() {
+  activeTab = 'brief';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-brief').classList.add('active');
+  renderBrief();
+}
+
+function setListView(page, mode) {
+  viewModes[page] = mode;
+  // Update toggle button states
+  const listBtn = document.getElementById(`${page[0]}${page.slice(1,2)}-list-btn`) ||
+                  document.getElementById(`af-list-btn`); // fallback for audit
+  if (page === 'audit') {
+    document.getElementById('af-list-btn')?.classList.toggle('active', mode === 'list');
+    document.getElementById('af-grid-btn')?.classList.toggle('active', mode === 'grid');
+    renderCards();
+  } else if (page === 'decisions') {
+    renderDecisionsSummary();
+  } else if (page === 'blockers') {
+    renderBlockers();
+  }
 }
 
 function setFilter(filter, btn) {
@@ -1385,15 +1840,16 @@ function setNotes(id, value) {
 }
 
 function jumpTo(id) {
-  // Switch to decisions, show all, open that card
-  activeTab = 'decisions';
+  // Switch to Audit Feedback where the cards live, show all, open that card
+  activeTab = 'audit';
   activeFilter = 'all';
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-decisions').classList.add('active');
+  document.getElementById('view-audit').classList.add('active');
   document.querySelectorAll('.tab')[1].classList.add('active');
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.filter-btn').classList.add('active');
+  renderAuditDash();
   renderCards();
   setTimeout(() => {
     if (!state[id]) state[id] = {};
@@ -1472,8 +1928,1059 @@ function importNotes(input) {
 }
 
 // ─────────────────────────────────────────────
+// NEW DASHBOARD — Aggregate view
+// ─────────────────────────────────────────────
+// ── Shared view toggle HTML generator ──
+function viewToggleHtml(page) {
+  const mode = page === 'components' ? compListMode : viewModes[page];
+  const pfx = page === 'components' ? 'cv' : page === 'audit' ? 'af' : page;
+  return `<div class="view-toggle">
+    <button class="vtoggle ${mode === 'list' ? 'active' : ''}" id="${pfx}-list-btn"
+      onclick="${page === 'components' ? "setCompView('list')" : `setListView('${page}','list')`}" title="List view">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+    </button>
+    <button class="vtoggle ${mode === 'grid' ? 'active' : ''}" id="${pfx}-grid-btn"
+      onclick="${page === 'components' ? "setCompView('grid')" : `setListView('${page}','grid')`}" title="Grid view">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
+    </button>
+  </div>`;
+}
+
+function renderNewDashboard() {
+  const el = document.getElementById('new-dash-content');
+  if (!el) return;
+
+  const s = stats();
+  const orgTotal = typeof ORGANISMS_DATA !== 'undefined' ? ORGANISMS_DATA.length : 38;
+  const molTotal = typeof MOLECULES_DATA !== 'undefined' ? MOLECULES_DATA.length : 37;
+  const atmTotal = typeof ATOMS_DATA !== 'undefined' ? ATOMS_DATA.length : 15;
+  const orgDone  = typeof ORGANISMS_DATA !== 'undefined' ? ORGANISMS_DATA.filter(o => compState.organisms?.[o.id]?.status === 'done').length : 0;
+  const molDone  = typeof MOLECULES_DATA !== 'undefined' ? MOLECULES_DATA.filter(m => compState.molecules?.[m.id]?.status === 'done').length : 0;
+  const atmDone  = typeof ATOMS_DATA !== 'undefined' ? ATOMS_DATA.filter(a => compState.atoms?.[a.id]?.status === 'done').length : 0;
+  const blkResolved = blockerState.filter(b => b.resolved).length;
+
+  const totalItems = 22 + orgTotal + molTotal + atmTotal + BLOCKERS.length;
+  const totalDone  = s.total + orgDone + molDone + atmDone + blkResolved;
+  const overallPct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
+  const allDone    = overallPct === 100;
+
+  const cards = [
+    { label: 'Audit Feedback', sub: 'decisions made',  done: s.total,     total: 22,            cls: 'c-audit',    tab: 'audit' },
+    { label: 'Organisms',      sub: 'components ready', done: orgDone,    total: orgTotal,       cls: 'c-org',      tab: 'components' },
+    { label: 'Molecules',      sub: 'components ready', done: molDone,    total: molTotal,       cls: 'c-mol',      tab: 'components' },
+    { label: 'Atoms',          sub: 'tokens ready',     done: atmDone,    total: atmTotal,       cls: 'c-atom',     tab: 'components' },
+    { label: 'Blockers',       sub: 'resolved',         done: blkResolved, total: BLOCKERS.length, cls: 'c-blockers', tab: 'blockers' },
+  ];
+
+  el.innerHTML = `
+    <div class="dash-overall" style="margin-bottom:24px">
+      <div class="dash-overall-label">Overall Completion</div>
+      <div class="dash-overall-bar"><div class="dash-overall-fill" style="width:${overallPct}%"></div></div>
+      <div class="dash-overall-pct">${overallPct}<span style="font-size:18px;color:var(--muted);font-weight:400">%</span></div>
+    </div>
+    <div class="dash-stat-grid">
+      ${cards.map(c => {
+        const pct = c.total > 0 ? Math.round((c.done / c.total) * 100) : 0;
+        return `
+          <div class="dash-stat-card ${c.cls}" onclick="switchTabByName('${c.tab}')">
+            <div class="dash-stat-num">${c.done}<span class="dash-stat-denom">/${c.total}</span></div>
+            <div class="dash-stat-label">${c.label}</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px">${c.sub}</div>
+            <div class="dash-stat-bar"><div class="dash-stat-bar-fill ${c.cls.replace('c-','fill-')}" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join('')}
+    </div>
+    ${allDone ? `
+      <div style="padding:20px 24px;background:var(--keep-dim);border-radius:var(--radius);border:1px solid var(--keep);margin-top:20px">
+        <div style="font-weight:600;color:var(--keep);margin-bottom:4px">✓ Brief is ready to generate</div>
+        <div style="font-size:13px;color:var(--muted)">All sections complete. Use "Generate Brief →" in the top nav.</div>
+      </div>` : ''}
+
+    <div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="section-label" style="margin-bottom:12px">Audit Feedback Breakdown</div>
+        <div class="scorecard" style="grid-template-columns:repeat(2,1fr)">
+          <div class="score-box s-total"><div class="score-num" id="sc-total">0</div><div class="score-label">Decided</div></div>
+          <div class="score-box s-keep"><div class="score-num" id="sc-keep">0</div><div class="score-label">Keep / Evolve</div></div>
+          <div class="score-box s-cut"><div class="score-num" id="sc-cut">0</div><div class="score-label">Cut</div></div>
+          <div class="score-box s-defer"><div class="score-num" id="sc-defer">0</div><div class="score-label">Defer</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom:12px">Decision Key</div>
+        <div class="key">
+          <div class="key-item"><span class="key-dot" style="background:var(--keep)"></span><span><strong>Keep / Evolve</strong> — stays in scope, with or without iteration</span></div>
+          <div class="key-item"><span class="key-dot" style="background:var(--cut)"></span><span><strong>Cut</strong> — remove entirely, not needed for launch</span></div>
+          <div class="key-item"><span class="key-dot" style="background:var(--defer)"></span><span><strong>Defer</strong> — good idea, revisit after launch</span></div>
+          <div class="key-item"><span class="key-dot" style="background:var(--border)"></span><span><strong>Undecided</strong> — needs a decision before briefing Antinomy</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchTabByName(tab) {
+  const btn = [...document.querySelectorAll('.tab')].find(b => b.onclick?.toString().includes(`'${tab}'`));
+  if (btn) switchTab(tab, btn);
+}
+
+// ─────────────────────────────────────────────
+// BLOCKERS — Render
+// ─────────────────────────────────────────────
+function renderBlockers() {
+  const el = document.getElementById('blockers-content');
+  if (!el) return;
+  const mode = viewModes.blockers;
+  const toggle = viewToggleHtml('blockers');
+  const resolved = blockerState.filter(b => b.resolved).length;
+
+  // Section A: Strategic open decisions (always full cards — they need text areas)
+  const strategicHtml = BLOCKERS.map((q, i) => {
+    const b = blockerState[i];
+    if (mode === 'grid') {
+      return `<div class="grid-card ${b.resolved ? 'd-keep' : 'd-undecided'}" style="cursor:default;border-top:3px solid ${b.resolved ? 'var(--keep)' : 'var(--border)'}">
+        <div class="grid-card-top"><span class="grid-num">#${i+1}</span><span class="badge ${b.resolved ? 'd-keep' : 'd-undecided'}">${b.resolved ? 'Resolved' : 'Open'}</span></div>
+        <div class="grid-title" style="font-size:12px">${escH(q)}</div>
+        <button class="blocker-resolve-btn ${b.resolved ? 'undo' : ''}" style="margin-top:8px;width:100%" onclick="toggleBlockerResolved(${i})">${b.resolved ? 'Unmark' : 'Mark resolved'}</button>
+      </div>`;
+    }
+    return `
+      <div class="blocker-card ${b.resolved ? 'resolved' : ''}" id="blocker-${i}">
+        <div class="blocker-question">
+          <span class="status-dot status-${b.resolved ? 'done' : 'todo'}"></span>
+          ${escH(q)}
+        </div>
+        <textarea class="blocker-answer" placeholder="Your decision or answer…" oninput="updateBlockerAnswer(${i}, this.value)">${escH(b.answer)}</textarea>
+        <button class="blocker-resolve-btn ${b.resolved ? 'undo' : ''}" onclick="toggleBlockerResolved(${i})">${b.resolved ? 'Mark unresolved' : 'Mark resolved'}</button>
+      </div>`;
+  }).join('');
+
+  // Section B: Deferred audit items
+  const deferredAudit = ITEMS.filter(i => state[i.id]?.decision === 'defer');
+  const deferredAuditHtml = deferredAudit.length === 0
+    ? '<div class="empty" style="padding:12px 0;font-size:13px">No deferred audit items.</div>'
+    : mode === 'grid'
+      ? `<div class="dash-grid">${deferredAudit.map(item => `
+          <div class="grid-card d-defer" onclick="expandAuditCard(${item.id})">
+            <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-defer">Defer</span></div>
+            <div class="grid-title">${escH(item.title)}</div>
+          </div>`).join('')}</div>`
+      : `<div class="cards-list">${deferredAudit.map(item => card(item)).join('')}</div>`;
+
+  // Section C: Deferred component items
+  const deferredCompHtmlParts = [];
+  if (typeof ORGANISMS_DATA !== 'undefined') {
+    ORGANISMS_DATA.forEach(o => { if (compState.organisms?.[o.id]?.status === 'deferred') deferredCompHtmlParts.push({name: o.name, cat: o.cat, id: o.id, type: 'org', label: 'Organism'}); });
+    MOLECULES_DATA.forEach(m => { if (compState.molecules?.[m.id]?.status === 'deferred') deferredCompHtmlParts.push({name: m.name, cat: m.cat, id: m.id, type: 'mol', label: 'Molecule'}); });
+    ATOMS_DATA.forEach(a => { if (compState.atoms?.[a.id]?.status === 'deferred') deferredCompHtmlParts.push({name: a.name, cat: a.cat, id: a.id, type: 'atom', label: 'Atom'}); });
+    (compState.custom?.organisms || []).forEach(c => { if (c.status === 'deferred') deferredCompHtmlParts.push({name: c.name, cat: c.cat, id: c.id, type: 'custom-org', label: 'Custom'}); });
+    (compState.custom?.molecules || []).forEach(c => { if (c.status === 'deferred') deferredCompHtmlParts.push({name: c.name, cat: c.cat, id: c.id, type: 'custom-mol', label: 'Custom'}); });
+  }
+  const deferredCompHtml = deferredCompHtmlParts.length === 0
+    ? '<div class="empty" style="padding:12px 0;font-size:13px">No deferred components.</div>'
+    : mode === 'grid'
+      ? `<div class="comp-grid-wrap">${deferredCompHtmlParts.map(c => `
+          <div class="comp-grid-tile deferred" style="cursor:default">
+            <div class="comp-grid-tile-top"><span class="status-dot status-deferred"></span><span class="comp-badge comp-deferred" style="font-size:9px">Deferred</span></div>
+            <div class="comp-grid-name">${escH(c.name)}</div>
+            <div class="comp-grid-cat">${escH(c.label)} · ${escH(c.cat)}</div>
+            <button class="comp-unmark-btn" style="margin-top:8px;width:100%;font-size:10px" onclick="setCompStatus('${c.type}','${c.id}','todo');renderBlockers()">Restore</button>
+          </div>`).join('')}</div>`
+      : deferredCompHtmlParts.map(c => renderDeferredCompCard(c.type, c.id, c.name, c.cat, c.label)).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="comp-progress-row" style="flex:1;margin:0 16px 0 0">
+        <span class="comp-prog-label">${resolved} of ${BLOCKERS.length} strategic decisions resolved</span>
+        <div class="comp-prog-track"><div class="comp-prog-fill" style="width:${Math.round(resolved/BLOCKERS.length*100)}%"></div></div>
+        <span class="comp-prog-pct">${Math.round(resolved/BLOCKERS.length*100)}%</span>
+      </div>
+      ${toggle}
+    </div>
+    <div class="section-label" style="margin-bottom:10px">Strategic Open Decisions (${BLOCKERS.length})</div>
+    ${mode === 'grid' ? `<div class="dash-grid">${strategicHtml}</div>` : strategicHtml}
+    <div class="section-label" style="margin:28px 0 10px">Deferred Audit Items (${deferredAudit.length})</div>
+    ${deferredAuditHtml}
+    <div class="section-label" style="margin:28px 0 10px">Deferred Components (${deferredCompHtmlParts.length})</div>
+    ${deferredCompHtml}
+  `;
+}
+
+function updateBlockerAnswer(index, value) {
+  blockerState[index].answer = value;
+  saveBlockers();
+}
+
+function toggleBlockerResolved(index) {
+  blockerState[index].resolved = !blockerState[index].resolved;
+  saveBlockers();
+  const y = window.scrollY;
+  renderBlockers();
+  renderNewDashboard();
+  window.scrollTo(0, y);
+}
+
+// ─────────────────────────────────────────────
+// DECISIONS SUMMARY — read-only
+// ─────────────────────────────────────────────
+function renderDecisionsSummary() {
+  const el = document.getElementById('decisions-content');
+  if (!el) return;
+  const mode = viewModes.decisions;
+  const toggle = viewToggleHtml('decisions');
+
+  // Components ready
+  const orgDone  = typeof ORGANISMS_DATA !== 'undefined' ? ORGANISMS_DATA.filter(o => compState.organisms?.[o.id]?.status === 'done') : [];
+  const molDone  = typeof MOLECULES_DATA !== 'undefined' ? MOLECULES_DATA.filter(m => compState.molecules?.[m.id]?.status === 'done') : [];
+  const atmDone  = typeof ATOMS_DATA !== 'undefined' ? ATOMS_DATA.filter(a => compState.atoms?.[a.id]?.status === 'done') : [];
+  const compTotal = orgDone.length + molDone.length + atmDone.length;
+  const grandTotal = (ORGANISMS_DATA?.length || 0) + (MOLECULES_DATA?.length || 0) + (ATOMS_DATA?.length || 0);
+
+  const allCompDone = [...orgDone, ...molDone, ...atmDone];
+
+  const compSection = compTotal === 0
+    ? '<div class="empty" style="padding:16px 0;text-align:left">No components marked ready yet.</div>'
+    : mode === 'grid'
+      ? `<div class="comp-grid-wrap">${allCompDone.map(i => `
+          <div class="comp-grid-tile" style="cursor:default">
+            <div class="comp-grid-tile-top"><span class="status-dot status-done"></span><span class="comp-badge comp-done" style="font-size:9px">Ready</span></div>
+            <div class="comp-grid-name">${escH(i.name)}</div>
+            <div class="comp-grid-cat">${escH(i.cat)}</div>
+          </div>`).join('')}</div>`
+      : `<div class="section-divider">Organisms — ${orgDone.length}</div>${orgDone.map(i => `<div class="comp-summary-row"><span class="status-dot status-done"></span><span>${escH(i.name)}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span></div>`).join('')}
+         <div class="section-divider">Molecules — ${molDone.length}</div>${molDone.map(i => `<div class="comp-summary-row"><span class="status-dot status-done"></span><span>${escH(i.name)}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span></div>`).join('')}
+         <div class="section-divider">Atoms — ${atmDone.length}</div>${atmDone.map(i => `<div class="comp-summary-row"><span class="status-dot status-done"></span><span>${escH(i.name)}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span></div>`).join('')}`;
+
+  // Audit decisions
+  const s = stats();
+  const decLabels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer' };
+  const keeps  = ITEMS.filter(i => state[i.id]?.decision === 'keep');
+  const cuts   = ITEMS.filter(i => state[i.id]?.decision === 'cut');
+  const defers = ITEMS.filter(i => state[i.id]?.decision === 'defer');
+  const allDecided = [...keeps, ...cuts, ...defers];
+
+  const auditSection = s.total === 0
+    ? '<div class="empty" style="padding:16px 0;text-align:left">No audit decisions made yet.</div>'
+    : mode === 'grid'
+      ? `<div class="dash-grid">${allDecided.map(i => {
+          const d = state[i.id].decision;
+          return `<div class="grid-card d-${d}" style="cursor:default">
+            <div class="grid-card-top"><span class="grid-num">#${i.id}</span><span class="badge d-${d}">${decLabels[d]}</span></div>
+            <div class="grid-title">${escH(i.title)}</div>
+          </div>`;
+        }).join('')}</div>`
+      : allDecided.map(i => {
+          const d = state[i.id].decision;
+          return `<div class="dash-row d-${d}" style="cursor:default">
+            <span class="badge d-${d}">${decLabels[d]}</span>
+            <span class="dash-name">${escH(i.title)}</span>
+            <span class="dash-num">#${i.id}</span>
+          </div>`;
+        }).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="section-label" style="margin:0">Components Ready — ${compTotal} of ${grandTotal}
+        <span class="comp-summary-link" style="margin-left:12px" onclick="switchTabByName('components')">Go to Components →</span>
+      </div>
+      ${toggle}
+    </div>
+    ${compSection}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:28px 0 10px">
+      <div class="section-label" style="margin:0">Audit Decisions — ${s.total} of 22</div>
+    </div>
+    ${auditSection}
+  `;
+}
+
+// ─────────────────────────────────────────────
+// DEFERRED COMP CARD — for Blockers tab
+// ─────────────────────────────────────────────
+function renderDeferredCompCard(type, id, name, cat, label) {
+  let data = { notes: '', status: 'deferred', variants: null };
+  if (type === 'org') { data = getOrgData(id); }
+  else if (type === 'mol') { data = getMolData(id); }
+  else if (type === 'atom') { data = getAtomData(id); }
+  else {
+    // custom items
+    const tier = type === 'custom-org' ? 'organisms' : type === 'custom-mol' ? 'molecules' : 'atoms';
+    const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+    if (c) data = c;
+  }
+
+  const variantsHtml = data.variants ? data.variants.map((v, i) => `
+    <div class="variant-item">
+      <div class="variant-name-row">
+        <span class="variant-num">${i + 1}</span>
+        <input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateVariantName('${id}', ${i}, this.value)">
+      </div>
+      <textarea class="notes-input" style="min-height:48px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${id}', ${i}, this.value)">${escH(v.notes)}</textarea>
+    </div>`).join('') : '';
+
+  return `
+    <div class="comp-card open" style="margin-bottom:12px">
+      <div class="comp-card-header" style="cursor:default">
+        <span class="status-dot status-deferred"></span>
+        <span class="comp-card-name">${escH(name)}</span>
+        <span class="comp-badge comp-deferred">${escH(label)}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:8px">${escH(cat)}</span>
+      </div>
+      <div class="comp-card-body">
+        <div class="notes-label" style="margin-top:14px">Notes</div>
+        <textarea class="notes-input" placeholder="Add feedback or notes before restoring…" oninput="updateOrgNotes('${id}', this.value)">${escH(data.notes || '')}</textarea>
+        ${variantsHtml ? `<div class="variants-header"><div class="notes-label" style="margin:0">Variants</div></div>${variantsHtml}` : ''}
+        <div class="comp-card-actions">
+          <button class="comp-mark-btn" onclick="setCompStatus('${type}','${id}','done');renderBlockers()">Mark as ready</button>
+          <button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo');renderBlockers()">Restore to active</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+// MODAL — grid tile popups
+// ─────────────────────────────────────────────
+function openGridModal(tier, id) {
+  const modal = document.getElementById('comp-modal');
+  const content = document.getElementById('comp-modal-content');
+  if (!modal || !content) return;
+
+  let data, name, cat, types = null;
+  if (tier === 'org') { data = getOrgData(id); name = data.name; cat = data.cat; }
+  else if (tier === 'mol') { data = getMolData(id); name = data.name; cat = data.cat; types = data.types; }
+  else if (tier === 'atom') { data = getAtomData(id); name = data.name; cat = data.cat; }
+  else { // custom
+    const tierKey = tier === 'custom-org' ? 'organisms' : tier === 'custom-mol' ? 'molecules' : 'atoms';
+    data = (compState.custom?.[tierKey] || []).find(x => x.id === id) || { notes: '', status: 'todo', variants: null };
+    name = data.name || 'Custom item'; cat = data.cat || '';
+  }
+
+  const variantsHtml = data.variants ? `
+    <div class="variants-header">
+      <div class="notes-label" style="margin:0">Variants (${data.variants.length})</div>
+      <div class="variant-controls">
+        <button class="variant-btn" onclick="addVariant('${id}');refreshModal('${tier}','${id}')">+</button>
+        <button class="variant-btn" onclick="removeVariant('${id}');refreshModal('${tier}','${id}')">−</button>
+      </div>
+    </div>
+    ${data.variants.map((v, i) => `
+      <div class="variant-item">
+        <div class="variant-name-row">
+          <span class="variant-num">${i + 1}</span>
+          <input class="variant-name-input" type="text" value="${escH(v.name)}" oninput="updateVariantName('${id}', ${i}, this.value)">
+        </div>
+        <textarea class="notes-input" style="min-height:48px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${id}', ${i}, this.value)">${escH(v.notes)}</textarea>
+      </div>`).join('')}` : '';
+
+  const typesHtml = types ? `<div class="notes-label" style="margin-top:12px">Types / States</div><div class="type-chips">${types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>` : '';
+
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span class="status-dot status-${data.status}"></span>
+      <div>
+        <div style="font-size:17px;font-weight:700;color:var(--text)">${escH(name)}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px">${escH(cat)}</div>
+      </div>
+      <span class="comp-badge comp-${data.status}" style="margin-left:auto">${statusLabel(data.status)}</span>
+    </div>
+    ${typesHtml}
+    <div class="notes-label" style="margin-top:${typesHtml ? '0' : '4px'}">Notes</div>
+    <textarea class="notes-input" style="min-height:80px" placeholder="Describe this component…" oninput="updateModalNotes('${tier}','${id}',this.value)">${escH(data.notes || '')}</textarea>
+    ${variantsHtml}
+    <div class="comp-card-actions" style="margin-top:16px">
+      ${actionsHtml(tier, id, data.status, tier.startsWith('custom'))}
+    </div>`;
+
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function refreshModal(tier, id) {
+  openGridModal(tier, id);
+}
+
+function updateModalNotes(tier, id, value) {
+  if (tier === 'org')        updateOrgNotes(id, value);
+  else if (tier === 'mol')   updateMolNotes(id, value);
+  else if (tier === 'atom')  updateAtomNotes(id, value);
+  else                       updateCustomNotes(tier === 'custom-org' ? 'organisms' : tier === 'custom-mol' ? 'molecules' : 'atoms', id, value);
+  // Update status dot in modal
+  const data = tier === 'org' ? getOrgData(id) : tier === 'mol' ? getMolData(id) : tier === 'atom' ? getAtomData(id) : null;
+}
+
+function closeModal(e) {
+  // Allow close from backdrop click or direct call (no event) or × button
+  if (e && e.target !== document.getElementById('comp-modal')) return;
+  _closeModal();
+}
+
+function _closeModal() {
+  document.getElementById('comp-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  const y = window.scrollY;
+  renderCompTab();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+
+// ─────────────────────────────────────────────
+// COMP SUMMARY (in Decisions tab)
+// ─────────────────────────────────────────────
+function renderCompSummary() {
+  const el = document.getElementById('comp-summary-section');
+  if (!el) return;
+
+  if (typeof ORGANISMS_DATA === 'undefined') { el.innerHTML = ''; return; }
+
+  const orgDone  = ORGANISMS_DATA.filter(o => compState.organisms?.[o.id]?.status === 'done');
+  const molDone  = MOLECULES_DATA.filter(m => compState.molecules?.[m.id]?.status === 'done');
+  const atmDone  = ATOMS_DATA.filter(a => compState.atoms?.[a.id]?.status === 'done');
+  const total    = orgDone.length + molDone.length + atmDone.length;
+  const grandTotal = ORGANISMS_DATA.length + MOLECULES_DATA.length + ATOMS_DATA.length;
+
+  if (total === 0) {
+    el.innerHTML = `
+      <div class="section-label" style="margin-bottom:6px">
+        Components Ready
+        <span class="comp-summary-link" onclick="switchTabByName('components')">Go to Components →</span>
+      </div>
+      <div class="empty" style="padding:16px 0;text-align:left">No components marked ready yet. Go to the Components tab to annotate and mark items ready.</div>`;
+    return;
+  }
+
+  const makeRows = (items, label) => items.length === 0 ? '' : `
+    <div class="section-divider">${label} — ${items.length} ready</div>
+    ${items.map(i => `
+      <div class="comp-summary-row">
+        <span class="status-dot status-done"></span>
+        <span>${escH(i.name)}</span>
+        <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span>
+      </div>`).join('')}`;
+
+  el.innerHTML = `
+    <div class="section-label" style="margin-bottom:10px">
+      Components Ready — ${total} of ${grandTotal}
+      <span class="comp-summary-link" onclick="switchTabByName('components')">Go to Components →</span>
+    </div>
+    ${makeRows(orgDone, 'Organisms')}
+    ${makeRows(molDone, 'Molecules')}
+    ${makeRows(atmDone, 'Atoms')}`;
+}
+
+// ─────────────────────────────────────────────
+// COMPONENTS — Data
+// ─────────────────────────────────────────────
+const ORGANISMS_DATA = [
+  { id:'nav-bar',          name:'Navigation Bar',           cat:'Global / Persistent', variants:[{name:'Default',notes:''},{name:'On Scroll',notes:''},{name:'Open / Expanded',notes:''}] },
+  { id:'mega-menu',        name:'Mega Menu / Dropdown',     cat:'Global / Persistent', variants:[{name:'Simple — text only',notes:''},{name:'Mid — image hidden in dropdown',notes:''},{name:'Full — image full or half width',notes:''}] },
+  { id:'announcement-bar', name:'Announcement Bar',         cat:'Global / Persistent', variants:[{name:'Default',notes:''}] },
+  { id:'cookie-bar',       name:'Cookie / Legal Bar',       cat:'Global / Persistent', variants:[{name:'Default',notes:''}] },
+  { id:'skip-link',        name:'Skip to Content Link',     cat:'Global / Persistent', variants:[{name:'Default',notes:''}] },
+  { id:'footer',           name:'Footer',                   cat:'Global / Persistent', variants:[{name:'Default',notes:''}] },
+  { id:'hero-video',       name:'Hero — Video Background',  cat:'Hero Patterns',       variants:[{name:'Default',notes:''}] },
+  { id:'hero-image',       name:'Hero — Image',             cat:'Hero Patterns',       variants:[{name:'Default',notes:''}] },
+  { id:'hero-split',       name:'Hero — Split',             cat:'Hero Patterns',       variants:[{name:'Text left, media right',notes:''}] },
+  { id:'feature-highlight',name:'Feature Highlight',        cat:'Content Sections',    variants:[{name:'Full width',notes:''},{name:'Split — text left',notes:''},{name:'Split — text right',notes:''}] },
+  { id:'feature-grid',     name:'Feature Grid',             cat:'Content Sections',    variants:[{name:'2-up',notes:''},{name:'3-up',notes:''},{name:'4-up',notes:''}] },
+  { id:'stats-bar',        name:'Stats / Metrics Bar',      cat:'Content Sections',    variants:[{name:'Default',notes:''}] },
+  { id:'card-grid',        name:'Card Grid',                cat:'Content Sections',    variants:[{name:'2 column',notes:''},{name:'3 column',notes:''},{name:'4 column',notes:''}] },
+  { id:'editorial-block',  name:'Editorial / Long-form Block', cat:'Content Sections', variants:[{name:'Default',notes:''}] },
+  { id:'testimonial',      name:'Quote / Testimonial Block',cat:'Content Sections',    variants:[{name:'Default',notes:''}] },
+  { id:'timeline',         name:'Timeline / Milestone List',cat:'Content Sections',    variants:[{name:'Default',notes:''}] },
+  { id:'gallery',          name:'Gallery',                  cat:'Media Sections',      variants:[{name:'Image grid',notes:''}] },
+  { id:'carousel',         name:'Carousel',                 cat:'Media Sections',      variants:[{name:'Images only — no card overlays',notes:''}] },
+  { id:'video-block',      name:'Video Block',              cat:'Media Sections',      variants:[{name:'Full width',notes:''}] },
+  { id:'video-text',       name:'Video + Text',             cat:'Media Sections',      variants:[{name:'Side by side',notes:''}] },
+  { id:'scrollable-video', name:'Scrollable Video',         cat:'Media Sections',      variants:[{name:'Default',notes:''}] },
+  { id:'accordion-group',  name:'Accordion Group',          cat:'Technical & Data',    variants:[{name:'Default',notes:''}] },
+  { id:'tab-panel',        name:'Tab Panel',                cat:'Technical & Data',    variants:[{name:'Default',notes:''}] },
+  { id:'spec-table',       name:'Spec / Data Table',        cat:'Technical & Data',    variants:[{name:'Default',notes:''}] },
+  { id:'diagram',          name:'Diagram / Annotated Figure', cat:'Technical & Data',  variants:[{name:'Default',notes:''}] },
+  { id:'quick-links',      name:'Quick Links Bar',          cat:'Navigation & Utility',variants:[{name:'Default',notes:''}] },
+  { id:'resource-grid',    name:'Resource / Link Grid',     cat:'Navigation & Utility',variants:[{name:'Default',notes:''}] },
+  { id:'toc',              name:'Table of Contents',        cat:'Navigation & Utility',variants:[{name:'Default',notes:''}] },
+  { id:'filter-bar',       name:'Filter Bar',               cat:'Navigation & Utility',variants:[{name:'Default',notes:''}] },
+  { id:'cta-section',      name:'CTA Section',              cat:'Conversion',          variants:[{name:'Default',notes:''}] },
+  { id:'contact-form',     name:'Contact / Inquiry Form',   cat:'Conversion',          variants:[{name:'Default',notes:''}] },
+  { id:'newsletter',       name:'Newsletter Signup',        cat:'Conversion',          variants:[{name:'Default',notes:''}] },
+  { id:'modal',            name:'Modal / Dialog',           cat:'Feedback & Overlay',  variants:[{name:'Default',notes:''}] },
+  { id:'drawer',           name:'Drawer / Side Panel',      cat:'Feedback & Overlay',  variants:[{name:'Default',notes:''}] },
+  { id:'toast',            name:'Toast / Notification',     cat:'Feedback & Overlay',  variants:[{name:'Info',notes:''},{name:'Success',notes:''},{name:'Warning',notes:''},{name:'Error',notes:''}] },
+  { id:'empty-state',      name:'Empty State',              cat:'Feedback & Overlay',  variants:[{name:'Default',notes:''}] },
+  { id:'error-state',      name:'Error State',              cat:'Feedback & Overlay',  variants:[{name:'404',notes:''},{name:'500',notes:''}] },
+  { id:'loading-state',    name:'Loading State',            cat:'Feedback & Overlay',  variants:[{name:'Skeleton screen',notes:''}] }
+];
+
+const MOLECULES_DATA = [
+  {id:'eyebrow-headline',   name:'Eyebrow + Headline',       cat:'Text & Display',   types:['Default']},
+  {id:'headline-body',      name:'Headline + Body',          cat:'Text & Display',   types:['Default']},
+  {id:'stat-callout',       name:'Stat Callout',             cat:'Text & Display',   types:['Default']},
+  {id:'quote-pullquote',    name:'Quote / Pullquote',        cat:'Text & Display',   types:['Default']},
+  {id:'media-caption',      name:'Media Caption',            cat:'Text & Display',   types:['Image','Video']},
+  {id:'badge-tag-pill',     name:'Badge / Tag / Pill',       cat:'Text & Display',   types:['Default','With icon']},
+  {id:'tag-group',          name:'Tag Group / Filter Chips', cat:'Text & Display',   types:['Default']},
+  {id:'button',             name:'Button',                   cat:'Buttons & Links',  types:['Primary','Secondary','Ghost','Text','Icon only']},
+  {id:'button-group',       name:'Button Group',             cat:'Buttons & Links',  types:['Default']},
+  {id:'link',               name:'Link',                     cat:'Buttons & Links',  types:['Inline','Standalone']},
+  {id:'toggle',             name:'Toggle / Switch',          cat:'Form Controls',    types:['On','Off','Disabled']},
+  {id:'checkbox',           name:'Checkbox',                 cat:'Form Controls',    types:['Unchecked','Checked','Indeterminate','Disabled']},
+  {id:'radio',              name:'Radio Button',             cat:'Form Controls',    types:['Unselected','Selected','Disabled']},
+  {id:'text-input',         name:'Text Input',               cat:'Form Controls',    types:['Default','Focused','Error','Disabled']},
+  {id:'textarea-m',         name:'Textarea',                 cat:'Form Controls',    types:['Default','Focused','Error']},
+  {id:'select',             name:'Select / Dropdown',        cat:'Form Controls',    types:['Default','Open','Disabled']},
+  {id:'form-field',         name:'Form Field',               cat:'Form Controls',    types:['Default','With helper','With error']},
+  {id:'search-field',       name:'Search Field',             cat:'Form Controls',    types:['Default','Active']},
+  {id:'nav-item',           name:'Nav Item',                 cat:'Navigation',       types:['Default','Hover','Active']},
+  {id:'dropdown-item',      name:'Dropdown Menu Item',       cat:'Navigation',       types:['Default','Hover','With icon']},
+  {id:'breadcrumb',         name:'Breadcrumb',               cat:'Navigation',       types:['Default']},
+  {id:'pagination',         name:'Pagination',               cat:'Navigation',       types:['Default']},
+  {id:'video-thumb',        name:'Video Thumbnail + Play',   cat:'Media',            types:['Default']},
+  {id:'image-overlay',      name:'Image with Overlay Text',  cat:'Media',            types:['Default']},
+  {id:'icon-label',         name:'Icon + Label',             cat:'Media',            types:['Default']},
+  {id:'social-link',        name:'Social Link Item',         cat:'Media',            types:['Default']},
+  {id:'tooltip',            name:'Tooltip',                  cat:'Feedback',         types:['Default','With title']},
+  {id:'inline-alert',       name:'Inline Alert',             cat:'Feedback',         types:['Info','Success','Warning','Error']},
+  {id:'progress-indicator', name:'Progress Indicator',       cat:'Feedback',         types:['Bar','Steps']},
+  {id:'accordion-item',     name:'Accordion Item',           cat:'Content Blocks',   types:['Closed','Open']},
+  {id:'tab-item',           name:'Tab Item',                 cat:'Content Blocks',   types:['Default','Hover','Active']},
+  {id:'card-base',          name:'Card',                     cat:'Content Blocks',   types:['Image top','No image','Horizontal']},
+  {id:'post-preview',       name:'Post / Article Preview',   cat:'Content Blocks',   types:['Default']},
+  {id:'team-tile',          name:'Team Member Tile',         cat:'Content Blocks',   types:['Default']},
+  {id:'timeline-entry',     name:'Timeline Entry',           cat:'Content Blocks',   types:['Default']},
+  {id:'spec-row',           name:'Spec Row',                 cat:'Content Blocks',   types:['Default']}
+];
+
+const ATOMS_DATA = [
+  {id:'color-tokens',       name:'Color Tokens',             cat:'Color'},
+  {id:'typography-tokens',  name:'Typography Tokens',        cat:'Typography'},
+  {id:'spacing-tokens',     name:'Spacing Tokens',           cat:'Spacing'},
+  {id:'shape-tokens',       name:'Shape Tokens',             cat:'Shape'},
+  {id:'elevation-tokens',   name:'Elevation / Shadow Tokens',cat:'Elevation'},
+  {id:'motion-tokens',      name:'Motion Tokens',            cat:'Motion'},
+  {id:'grid-tokens',        name:'Grid & Layout Tokens',     cat:'Grid'},
+  {id:'iconography',        name:'Iconography',              cat:'Icons'},
+  {id:'divider',            name:'Line / Divider',           cat:'Base'},
+  {id:'image-atom',         name:'Image',                    cat:'Base'},
+  {id:'video-atom',         name:'Video (base)',             cat:'Base'},
+  {id:'avatar',             name:'Avatar',                   cat:'Base'},
+  {id:'skeleton',           name:'Skeleton / Placeholder',   cat:'Base'},
+  {id:'focus-ring',         name:'Focus Ring',               cat:'Base'},
+  {id:'logo',               name:'Logo Mark / Lockup',       cat:'Base'}
+];
+
+// ─────────────────────────────────────────────
+// COMPONENTS — State
+// ─────────────────────────────────────────────
+const COMP_KEY = 'vast-components-v1';
+const COMP_OPEN_KEY = 'vast-comp-open';
+
+function loadComp() {
+  try { return JSON.parse(localStorage.getItem(COMP_KEY) || '{}'); } catch { return {}; }
+}
+let compState = loadComp();
+function saveComp() { localStorage.setItem(COMP_KEY, JSON.stringify(compState)); }
+
+let activeCompTab = 'organisms';
+let compListMode = 'grid';
+let openCompCards = new Set(JSON.parse(localStorage.getItem(COMP_OPEN_KEY) || '[]'));
+function saveOpen() { localStorage.setItem(COMP_OPEN_KEY, JSON.stringify([...openCompCards])); }
+if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
+
+function getOrgData(id) {
+  const def = ORGANISMS_DATA.find(o => o.id === id);
+  const saved = compState.organisms?.[id] || {};
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})) };
+}
+function getMolData(id) {
+  const def = MOLECULES_DATA.find(m => m.id === id);
+  const saved = compState.molecules?.[id] || {};
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo' };
+}
+function getAtomData(id) {
+  const def = ATOMS_DATA.find(a => a.id === id);
+  const saved = compState.atoms?.[id] || {};
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo' };
+}
+
+function ensureOrg(id) {
+  if (!compState.organisms) compState.organisms = {};
+  if (!compState.organisms[id]) {
+    const def = ORGANISMS_DATA.find(o => o.id === id);
+    compState.organisms[id] = { notes: '', status: 'todo', variants: def.variants.map(v => ({...v})) };
+  }
+  return compState.organisms[id];
+}
+function ensureMol(id) {
+  if (!compState.molecules) compState.molecules = {};
+  if (!compState.molecules[id]) compState.molecules[id] = { notes: '', status: 'todo' };
+  return compState.molecules[id];
+}
+function ensureAtom(id) {
+  if (!compState.atoms) compState.atoms = {};
+  if (!compState.atoms[id]) compState.atoms[id] = { notes: '', status: 'todo' };
+  return compState.atoms[id];
+}
+
+// ─────────────────────────────────────────────
+// COMPONENTS — Progress
+// ─────────────────────────────────────────────
+function compStats() {
+  const orgDone = ORGANISMS_DATA.filter(o => compState.organisms?.[o.id]?.status === 'done').length;
+  const molDone = MOLECULES_DATA.filter(m => compState.molecules?.[m.id]?.status === 'done').length;
+  const atmDone = ATOMS_DATA.filter(a => compState.atoms?.[a.id]?.status === 'done').length;
+  const total = ORGANISMS_DATA.length + MOLECULES_DATA.length + ATOMS_DATA.length;
+  return { done: orgDone + molDone + atmDone, total };
+}
+
+function updateCompProgress() {
+  const { done, total } = compStats();
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const label = document.getElementById('comp-prog-label');
+  const fill  = document.getElementById('comp-prog-fill');
+  const pctEl = document.getElementById('comp-prog-pct');
+  if (label) label.textContent = done + ' of ' + total + ' ready';
+  if (fill)  fill.style.width  = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+// ─────────────────────────────────────────────
+// COMPONENTS — Helpers
+// ─────────────────────────────────────────────
+function escH(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function groupByKey(arr, key) {
+  return arr.reduce((acc, item) => { const k = item[key]; if (!acc[k]) acc[k] = []; acc[k].push(item); return acc; }, {});
+}
+function statusLabel(s) {
+  if (s === 'done')     return 'Ready';
+  if (s === 'progress') return 'In progress';
+  if (s === 'deferred') return 'Deferred';
+  return 'Not started';
+}
+
+// ─────────────────────────────────────────────
+// COMPONENTS — Render
+// ─────────────────────────────────────────────
+function switchCompTab(tab, btn) {
+  activeCompTab = tab;
+  document.querySelectorAll('.comp-subtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.comp-view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cv-' + tab).classList.add('active');
+  renderCompTab();
+}
+
+function renderCompTab() {
+  if (activeCompTab === 'organisms')  renderOrganisms();
+  else if (activeCompTab === 'molecules') renderMolecules();
+  else renderAtoms();
+  updateCompProgress();
+}
+
+// ── Shared card-action buttons ──
+function actionsHtml(type, id, status, isCustom) {
+  const ready  = `<button class="comp-mark-btn" onclick="setCompStatus('${type}','${id}','done')">Mark as ready</button>`;
+  const unmark = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Unmark</button>`;
+  const defer  = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','deferred')" style="color:var(--muted)">Defer</button>`;
+  const restore= `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Restore</button>`;
+  const del    = isCustom ? `<button class="delete-item-btn" onclick="deleteCustomItem('${type}','${id}')">✕ Delete</button>` : '';
+  if (status === 'done')     return `${del}${unmark}`;
+  if (status === 'deferred') return `${del}${restore}`;
+  return `${del}${defer}${ready}`;
+}
+
+// ── Grid tile helper ──
+function gridTile(id, name, cat, status, isCustom, tier) {
+  return `
+    <div class="comp-grid-tile ${isCustom ? 'custom-item' : ''} ${status === 'deferred' ? 'deferred' : ''}"
+         onclick="openGridModal('${tier}','${id}')">
+      <div class="comp-grid-tile-top">
+        <span class="status-dot status-${status}"></span>
+        <span class="comp-badge comp-${status}" style="font-size:9px">${statusLabel(status)}</span>
+      </div>
+      <div class="comp-grid-name">${escH(name)}</div>
+      <div class="comp-grid-cat">${escH(cat)}</div>
+    </div>`;
+}
+
+function switchToListAndOpen(id) {
+  setCompView('list');
+  // open the card
+  if (!openCompCards.has(id)) { openCompCards.add(id); saveOpen(); }
+  renderCompTab();
+  setTimeout(() => {
+    const el = document.getElementById('cc-' + id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 60);
+}
+
+function renderOrganisms() {
+  const el = document.getElementById('cv-organisms');
+  if (!el) return;
+  const groups = groupByKey(ORGANISMS_DATA, 'cat');
+  let html = '';
+
+  if (compListMode === 'grid') {
+    Object.entries(groups).forEach(([cat, items]) => {
+      const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
+      html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
+      items.forEach(def => {
+        const s = compState.organisms?.[def.id]?.status || 'todo';
+        html += gridTile(def.id, def.name, cat, s, false, 'org');
+      });
+      custom.forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-org'));
+      html += `</div>`;
+    });
+  } else {
+    Object.entries(groups).forEach(([cat, items]) => {
+      const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
+      const allItems = items;
+      const done = allItems.filter(i => compState.organisms?.[i.id]?.status === 'done').length
+                 + custom.filter(c => c.status === 'done').length;
+      const total = allItems.length + custom.length;
+      html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+        <span>${escH(cat)} — ${done}/${total}</span>
+        <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button>
+      </div>`;
+      allItems.forEach(def => {
+        const d = getOrgData(def.id);
+        const isOpen = openCompCards.has(def.id);
+        html += `
+          <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
+            <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
+              <span class="status-dot status-${d.status}" id="dot-${def.id}"></span>
+              <span class="comp-card-name">${escH(def.name)}</span>
+              <span class="comp-badge comp-${d.status}" id="badge-${def.id}">${statusLabel(d.status)}</span>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}" id="ccb-${def.id}">
+              <div class="notes-label" style="margin-top:14px">Component Notes</div>
+              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior, Vast-specific constraints…" oninput="updateOrgNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+              <div class="variants-header">
+                <div class="notes-label" style="margin:0">Variants (${d.variants.length})</div>
+                <div class="variant-controls">
+                  <button class="variant-btn" onclick="addVariant('${def.id}')">+</button>
+                  <button class="variant-btn" onclick="removeVariant('${def.id}')">−</button>
+                </div>
+              </div>
+              ${d.variants.map((v, i) => `
+                <div class="variant-item">
+                  <div class="variant-name-row">
+                    <span class="variant-num">${i + 1}</span>
+                    <input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateVariantName('${def.id}', ${i}, this.value)">
+                  </div>
+                  <textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${def.id}', ${i}, this.value)">${escH(v.notes)}</textarea>
+                </div>`).join('')}
+              <div class="comp-card-actions">${actionsHtml('org', def.id, d.status, false)}</div>
+            </div>
+          </div>`;
+      });
+      custom.forEach(c => {
+        const isOpen = openCompCards.has(c.id);
+        html += `
+          <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
+            <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
+              <span class="status-dot status-${c.status}"></span>
+              <input type="text" value="${escH(c.name)}" placeholder="Component name"
+                style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
+                oninput="updateCustomName('organisms','${c.id}',this.value)">
+              <span class="custom-label">Custom</span>
+              <span class="comp-badge comp-${c.status}" style="margin-left:8px">${statusLabel(c.status)}</span>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+              <div class="notes-label" style="margin-top:14px">Notes</div>
+              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+              <div class="comp-card-actions">${actionsHtml('custom-org', c.id, c.status, true)}</div>
+            </div>
+          </div>`;
+      });
+    });
+  }
+  el.innerHTML = html;
+}
+
+function renderMolecules() {
+  const el = document.getElementById('cv-molecules');
+  if (!el) return;
+  const groups = groupByKey(MOLECULES_DATA, 'cat');
+  let html = '';
+
+  if (compListMode === 'grid') {
+    Object.entries(groups).forEach(([cat, items]) => {
+      const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
+      html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('molecules','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
+      items.forEach(def => {
+        const s = compState.molecules?.[def.id]?.status || 'todo';
+        html += gridTile(def.id, def.name, cat, s, false, 'mol');
+      });
+      custom.forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-mol'));
+      html += `</div>`;
+    });
+  } else {
+    Object.entries(groups).forEach(([cat, items]) => {
+      const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
+      const done = items.filter(i => compState.molecules?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
+      html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+        <span>${escH(cat)} — ${done}/${items.length + custom.length}</span>
+        <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('molecules','${escH(cat)}')">+ Add</button>
+      </div>`;
+      items.forEach(def => {
+        const d = getMolData(def.id);
+        const isOpen = openCompCards.has(def.id);
+        html += `
+          <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
+            <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
+              <span class="status-dot status-${d.status}" id="dot-${def.id}"></span>
+              <span class="comp-card-name">${escH(def.name)}</span>
+              <span class="comp-badge comp-${d.status}" id="badge-${def.id}">${statusLabel(d.status)}</span>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+              <div class="notes-label" style="margin-top:12px">Types / States</div>
+              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
+              <div class="notes-label">Notes</div>
+              <textarea class="notes-input" style="min-height:64px" placeholder="Types, states, rules, visual constraints…" oninput="updateMolNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+              <div class="comp-card-actions">${actionsHtml('mol', def.id, d.status, false)}</div>
+            </div>
+          </div>`;
+      });
+      custom.forEach(c => {
+        const isOpen = openCompCards.has(c.id);
+        html += `
+          <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
+            <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
+              <span class="status-dot status-${c.status}"></span>
+              <input type="text" value="${escH(c.name)}" placeholder="Component name"
+                style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
+                oninput="updateCustomName('molecules','${c.id}',this.value)">
+              <span class="custom-label">Custom</span>
+              <span class="comp-badge comp-${c.status}" style="margin-left:8px">${statusLabel(c.status)}</span>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+              <div class="notes-label" style="margin-top:14px">Notes</div>
+              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('molecules','${c.id}',this.value)">${escH(c.notes)}</textarea>
+              <div class="comp-card-actions">${actionsHtml('custom-mol', c.id, c.status, true)}</div>
+            </div>
+          </div>`;
+      });
+    });
+  }
+  el.innerHTML = html;
+}
+
+function renderAtoms() {
+  const el = document.getElementById('cv-atoms');
+  if (!el) return;
+  const groups = groupByKey(ATOMS_DATA, 'cat');
+  let html = '';
+
+  if (compListMode === 'grid') {
+    Object.entries(groups).forEach(([cat, items]) => {
+      const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
+      html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('atoms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
+      items.forEach(def => {
+        const s = compState.atoms?.[def.id]?.status || 'todo';
+        html += gridTile(def.id, def.name, cat, s, false, 'atom');
+      });
+      custom.forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-atom'));
+      html += `</div>`;
+    });
+  } else {
+    Object.entries(groups).forEach(([cat, items]) => {
+      const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
+      const done = items.filter(i => compState.atoms?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
+      html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+        <span>${escH(cat)} — ${done}/${items.length + custom.length}</span>
+        <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('atoms','${escH(cat)}')">+ Add</button>
+      </div>`;
+      items.forEach(def => {
+        const d = getAtomData(def.id);
+        const isOpen = openCompCards.has(def.id);
+        html += `
+          <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
+            <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
+              <span class="status-dot status-${d.status}" id="dot-${def.id}"></span>
+              <span class="comp-card-name">${escH(def.name)}</span>
+              <span class="comp-badge comp-${d.status}" id="badge-${def.id}">${statusLabel(d.status)}</span>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+              <div class="notes-label" style="margin-top:14px">Notes</div>
+              <textarea class="notes-input" style="min-height:56px" placeholder="Values, rules, decisions, constraints…" oninput="updateAtomNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+              <div class="comp-card-actions">${actionsHtml('atom', def.id, d.status, false)}</div>
+            </div>
+          </div>`;
+      });
+      custom.forEach(c => {
+        const isOpen = openCompCards.has(c.id);
+        html += `
+          <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
+            <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
+              <span class="status-dot status-${c.status}"></span>
+              <input type="text" value="${escH(c.name)}" placeholder="Token / element name"
+                style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
+                oninput="updateCustomName('atoms','${c.id}',this.value)">
+              <span class="custom-label">Custom</span>
+              <span class="comp-badge comp-${c.status}" style="margin-left:8px">${statusLabel(c.status)}</span>
+              <span class="comp-chevron">▶</span>
+            </div>
+            <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+              <div class="notes-label" style="margin-top:14px">Notes</div>
+              <textarea class="notes-input" placeholder="Describe this element…" oninput="updateCustomNotes('atoms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+              <div class="comp-card-actions">${actionsHtml('custom-atom', c.id, c.status, true)}</div>
+            </div>
+          </div>`;
+      });
+    });
+  }
+  el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────
+// COMPONENTS — Actions
+// ─────────────────────────────────────────────
+function toggleCompCard(id) {
+  if (openCompCards.has(id)) openCompCards.delete(id);
+  else openCompCards.add(id);
+  saveOpen();
+  const card = document.getElementById('cc-' + id);
+  const body = document.getElementById('ccb-' + id) || card?.querySelector('.comp-card-body');
+  if (card) card.classList.toggle('open', openCompCards.has(id));
+  if (body) body.classList.toggle('hidden', !openCompCards.has(id));
+  if (!document.getElementById('ccb-' + id) && card) {
+    const b = card.querySelector('.comp-card-body');
+    if (b) b.classList.toggle('hidden', !openCompCards.has(id));
+  }
+}
+
+function updateOrgNotes(id, value) {
+  const org = ensureOrg(id);
+  org.notes = value;
+  if (org.status === 'todo' && value.trim()) { org.status = 'progress'; updateStatusUI(id, 'progress'); }
+  saveComp();
+}
+function updateMolNotes(id, value) {
+  const mol = ensureMol(id);
+  mol.notes = value;
+  if (mol.status === 'todo' && value.trim()) { mol.status = 'progress'; updateStatusUI(id, 'progress'); }
+  saveComp();
+}
+function updateAtomNotes(id, value) {
+  const atom = ensureAtom(id);
+  atom.notes = value;
+  if (atom.status === 'todo' && value.trim()) { atom.status = 'progress'; updateStatusUI(id, 'progress'); }
+  saveComp();
+}
+function updateVariantName(id, index, value) {
+  const org = ensureOrg(id);
+  if (org.variants[index]) { org.variants[index].name = value; saveComp(); }
+}
+function updateVariantNotes(id, index, value) {
+  const org = ensureOrg(id);
+  if (org.variants[index]) {
+    org.variants[index].notes = value;
+    if (org.status === 'todo' && value.trim()) { org.status = 'progress'; updateStatusUI(id, 'progress'); }
+    saveComp();
+  }
+}
+function addVariant(id) {
+  const org = ensureOrg(id);
+  org.variants.push({ name: 'New variant', notes: '' });
+  saveComp();
+  const y = window.scrollY;
+  renderOrganisms();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+function removeVariant(id) {
+  const org = ensureOrg(id);
+  if (org.variants.length > 1) { org.variants.pop(); saveComp(); }
+  const y = window.scrollY;
+  renderOrganisms();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+function setCompStatus(type, id, status) {
+  if (type === 'org')        ensureOrg(id).status  = status;
+  else if (type === 'mol')   ensureMol(id).status  = status;
+  else if (type === 'atom')  ensureAtom(id).status = status;
+  else if (type === 'custom-org') {
+    const c = (compState.custom.organisms || []).find(x => x.id === id);
+    if (c) c.status = status;
+  } else if (type === 'custom-mol') {
+    const c = (compState.custom.molecules || []).find(x => x.id === id);
+    if (c) c.status = status;
+  } else if (type === 'custom-atom') {
+    const c = (compState.custom.atoms || []).find(x => x.id === id);
+    if (c) c.status = status;
+  }
+  saveComp();
+  updateStatusUI(id, status);
+  updateCompProgress();
+  const y = window.scrollY;
+  renderCompTab();
+  window.scrollTo(0, y);
+}
+
+function updateStatusUI(id, status) {
+  const dot   = document.getElementById('dot-'   + id);
+  const badge = document.getElementById('badge-' + id);
+  if (dot)   dot.className = 'status-dot status-' + status;
+  if (badge) { badge.className = 'comp-badge comp-' + status; badge.textContent = statusLabel(status); }
+}
+
+// ── View toggle ──
+function setCompView(mode) {
+  compListMode = mode;
+  document.getElementById('cv-list-btn')?.classList.toggle('active', mode === 'list');
+  document.getElementById('cv-grid-btn')?.classList.toggle('active', mode === 'grid');
+  const y = window.scrollY;
+  renderCompTab();
+  window.scrollTo(0, y);
+}
+
+// ── Custom items ──
+function addCustomItem(tier, cat) {
+  if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
+  const newItem = { id: 'custom-' + Date.now(), name: 'New component', cat, notes: '', status: 'todo' };
+  compState.custom[tier].push(newItem);
+  saveComp();
+  const y = window.scrollY;
+  renderCompTab();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+
+function deleteCustomItem(tier, id) {
+  const tierKey = tier.replace('custom-','').replace('org','organisms').replace('mol','molecules').replace('atom','atoms');
+  const fullTier = tierKey === 'organisms' || tierKey === 'molecules' || tierKey === 'atoms' ? tierKey
+    : tier === 'custom-org' ? 'organisms' : tier === 'custom-mol' ? 'molecules' : 'atoms';
+  if (!compState.custom) return;
+  compState.custom[fullTier] = (compState.custom[fullTier] || []).filter(c => c.id !== id);
+  saveComp();
+  const y = window.scrollY;
+  renderCompTab();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+
+function updateCustomName(tier, id, value) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (c) { c.name = value; saveComp(); }
+}
+
+function updateCustomNotes(tier, id, value) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (c) { c.notes = value; if (c.status === 'todo' && value.trim()) c.status = 'progress'; saveComp(); }
+}
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
+renderNewDashboard();
 refresh();
 </script>
 </body>
