@@ -131,7 +131,13 @@ body {
 
 /* ── Layout ── */
 .content {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 36px 48px 80px;
+  width: 100%;
+}
+@media (max-width: 1200px) {
+  .content { padding: 24px 28px 60px; }
 }
 
 .view { display: none; }
@@ -259,7 +265,8 @@ body {
 .filter-btn:hover { background: var(--surface2); color: var(--text); }
 .filter-btn.active { background: var(--text); color: #FFF; border-color: var(--text); }
 
-.cards-list {
+/* Applied to list-mode card containers everywhere */
+.cards-list, #cards-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -283,17 +290,10 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color 0.2s;
   box-shadow: var(--shadow-sm);
 }
-
-.card.d-keep   { border-left-color: var(--keep); }
-.card.d-cut    { border-left-color: var(--cut); }
-.card.d-defer  { border-left-color: var(--defer); }
-.card.d-evolve { border-left-color: var(--evolve); }
 
 .card-top {
   display: flex;
@@ -524,8 +524,8 @@ body {
 /* ── Dash grid ── */
 .dash-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 .grid-card {
@@ -890,32 +890,7 @@ body {
 }
 .delete-item-btn:hover { background: var(--cut-dim); }
 
-/* ── Blockers tab ── */
-.blocker-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-left: 3px solid var(--border); border-radius: var(--radius);
-  padding: 14px 16px; margin-bottom: 8px; box-shadow: var(--shadow-sm);
-  transition: border-left-color 0.2s;
-}
-.blocker-card.resolved { border-left-color: var(--keep); }
-.blocker-question { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-.blocker-answer {
-  width: 100%; background: var(--bg); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  font-family: 'Instrument Sans', sans-serif; font-size: 13px;
-  padding: 8px 10px; resize: vertical; min-height: 52px; outline: none;
-  transition: border-color 0.15s; margin-bottom: 10px; display: block;
-}
-.blocker-answer:focus { border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-dim); }
-.blocker-answer::placeholder { color: var(--faint); }
-.blocker-resolve-btn {
-  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; padding: 5px 12px; border-radius: var(--radius-sm);
-  border: none; cursor: pointer; background: var(--keep-dim); color: var(--keep); transition: all 0.15s;
-}
-.blocker-resolve-btn:hover { background: var(--keep); color: #fff; }
-.blocker-resolve-btn.undo { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-.blocker-resolve-btn.undo:hover { background: var(--border); color: var(--text); }
+/* Blocker cards now use standard .comp-card / .comp-grid-tile styles */
 .deferred-ref-row {
   display: flex; align-items: center; gap: 10px; padding: 9px 12px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -991,17 +966,47 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 /* ── Comp grid view ── */
 .comp-grid-wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+/* ── Standardized status label (no dot) — used on all cards ── */
+.status-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 2px 8px; border-radius: var(--radius-sm);
+  flex-shrink: 0; display: inline-block; align-self: flex-start;
+  white-space: nowrap; /* never stretches wider than the text */
+}
+/* In grid tiles, add breathing room below the label before the title */
+.comp-grid-tile .status-label { margin-bottom: 6px; }
+
+/* In list card headers, label is a fixed-width column so all titles align */
+.comp-card-header .status-label,
+.card-top .status-label {
+  min-width: 112px;
+  text-align: center;
+}
+/* Component/blocker states */
+.sl-todo     { background: var(--surface2); color: var(--muted); }
+.sl-progress { background: rgba(245,158,11,0.12); color: #b45309; }
+.sl-done     { background: var(--keep-dim); color: var(--keep); }
+.sl-deferred { background: rgba(148,163,184,0.12); color: #64748b; }
+/* Audit decision states */
+.sl-keep     { background: var(--keep-dim); color: var(--keep); }
+.sl-cut      { background: var(--cut-dim); color: var(--cut); }
+.sl-defer    { background: var(--defer-dim); color: var(--defer); }
+.sl-undecided { background: var(--surface2); color: var(--muted); }
+
+/* ── Standard grid tile — used on all grid views ── */
 .comp-grid-tile {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 12px 14px; cursor: pointer; transition: background 0.12s; box-shadow: var(--shadow-sm);
-  display: flex; flex-direction: column; gap: 6px; min-height: 80px;
+  padding: 14px; cursor: pointer; transition: background 0.12s; box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; min-height: 110px;
 }
 .comp-grid-tile:hover { background: var(--bg); }
 .comp-grid-tile.custom-item { border-left: 3px solid var(--orange); }
-.comp-grid-tile.deferred { opacity: 0.5; }
-.comp-grid-tile-top { display: flex; align-items: center; gap: 8px; }
-.comp-grid-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.3; }
-.comp-grid-cat { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.04em; }
+.comp-grid-tile.deferred { opacity: 0.55; }
+.comp-grid-tile-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.comp-grid-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; margin-bottom: 4px; }
+.comp-grid-desc { font-size: 11px; color: var(--muted); line-height: 1.45; margin-bottom: 6px; }
+.comp-grid-cat  { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.04em; margin-top: auto; padding-top: 6px; }
 
 /* ── Comp summary (in Decisions) ── */
 .comp-summary-block { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
@@ -1063,8 +1068,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     <button class="tab active" onclick="switchTab('dashboard', this)">Dashboard</button>
     <button class="tab" onclick="switchTab('audit', this)">Audit Feedback</button>
     <button class="tab" onclick="switchTab('components', this)">Components</button>
-    <button class="tab" onclick="switchTab('decisions', this)">Decisions</button>
     <button class="tab" onclick="switchTab('blockers', this)">Blockers</button>
+    <button class="tab" onclick="switchTab('decisions', this)">Decisions</button>
   </div>
   <button class="copy-btn" style="margin-left:auto;padding:6px 16px;font-size:12px;border-radius:20px" onclick="openBrief()">Generate Brief →</button>
 
@@ -1080,7 +1085,12 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
   <!-- AUDIT FEEDBACK -->
   <div class="view" id="view-audit">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div class="comp-progress-row" style="margin-bottom:14px">
+      <span class="comp-prog-label" id="audit-prog-label">0 of 22 decided</span>
+      <div class="comp-prog-track"><div class="comp-prog-fill" id="audit-prog-fill" style="width:0%;background:var(--evolve)"></div></div>
+      <span class="comp-prog-pct" id="audit-prog-pct">0%</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div class="filter-bar" id="filter-bar" style="margin-bottom:0">
         <button class="filter-btn active" onclick="setFilter('all', this)">All (22)</button>
         <button class="filter-btn" onclick="setFilter('undecided', this)">Undecided</button>
@@ -1112,6 +1122,11 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
   <!-- COMPONENTS -->
   <div class="view" id="view-components">
+    <div class="comp-progress-row" style="margin-bottom:14px">
+      <span class="comp-prog-label" id="comp-prog-label">0 of 0 ready</span>
+      <div class="comp-prog-track"><div class="comp-prog-fill" id="comp-prog-fill" style="width:0%"></div></div>
+      <span class="comp-prog-pct" id="comp-prog-pct">0%</span>
+    </div>
     <div class="comp-subtabs" style="justify-content:space-between;align-items:center">
       <div style="display:flex;gap:4px">
         <button class="comp-subtab active" onclick="switchCompTab('organisms', this)">Organisms</button>
@@ -1126,11 +1141,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
         </button>
       </div>
-    </div>
-    <div class="comp-progress-row">
-      <span class="comp-prog-label" id="comp-prog-label">0 of 0 ready</span>
-      <div class="comp-prog-track"><div class="comp-prog-fill" id="comp-prog-fill" style="width:0%"></div></div>
-      <span class="comp-prog-pct" id="comp-prog-pct">0%</span>
     </div>
     <div class="comp-view active" id="cv-organisms"></div>
     <div class="comp-view" id="cv-molecules"></div>
@@ -1394,12 +1404,17 @@ function load() {
 
 function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
 
-let state = load();          // { [id]: { decision, notes, open } }
+let state = load();          // { [id]: { decision, notes } }
+const openAuditCards    = new Set(); // session-only, never persisted — cards always start closed
+const openDecisionCards = new Set(); // same for Decisions list view
 let activeFilter = 'all';
 let activeTab = 'dashboard';
 let dashView = 'list';
 // Grid/list modes — default to grid
 const viewModes = { audit: 'grid', decisions: 'grid', blockers: 'grid' };
+// Filter states
+let blockersFilter  = 'all';  // all | strategic | deferred-audit | deferred-comp
+let decisionsFilter = 'all';  // all | components | audit
 
 // Blockers — strategic open decisions
 const BLOCKERS = [
@@ -1414,6 +1429,9 @@ const BLOCKERS = [
   'Breakpoints — mobile and tablet behavior not yet defined at all.',
   'Dark mode — full dark mode or surface variants (dark sections) only?'
 ];
+// Helpers to split "Title — description" strings
+function bTitle(q) { return q.split(' — ')[0]; }
+function bDesc(q)  { const p = q.split(' — '); return p.length > 1 ? p.slice(1).join(' — ') : ''; }
 const BLOCKER_KEY = 'vast-blockers-v1';
 function loadBlockers() { try { return JSON.parse(localStorage.getItem(BLOCKER_KEY) || '[]'); } catch { return []; } }
 let blockerState = loadBlockers(); // [{ answer: '', resolved: false }, ...]
@@ -1441,7 +1459,14 @@ function stats() {
 function refresh() {
   const s = stats();
   const pct = Math.round((s.total / 22) * 100);
-  // prog-fill / prog-text removed from header — skip gracefully
+  // Header progress bar removed — update audit tab bar instead
+  const auditFill  = document.getElementById('audit-prog-fill');
+  const auditLabel = document.getElementById('audit-prog-label');
+  const auditPct   = document.getElementById('audit-prog-pct');
+  if (auditFill)  auditFill.style.width = pct + '%';
+  if (auditLabel) auditLabel.textContent = s.total + ' of 22 decided';
+  if (auditPct)   auditPct.textContent   = pct + '%';
+  // Also keep old IDs working if they exist elsewhere
   const pfill = document.getElementById('prog-fill');
   const ptext = document.getElementById('prog-text');
   if (pfill) pfill.style.width = pct + '%';
@@ -1487,31 +1512,22 @@ function renderCards() {
     const modules = visible.filter(i => i.type === 'module');
     const rules   = visible.filter(i => i.type === 'rule');
     let html = '';
+    const auditTile = item => {
+      const d = state[item.id]?.decision || 'undecided';
+      return `<div class="comp-grid-tile" onclick="openAuditModal(${item.id})">
+        <span class="status-label sl-${d}">${{keep:'Keep / Evolve',cut:'Cut',defer:'Defer',undecided:'Undecided'}[d]}</span>
+        <div class="comp-grid-name">${escH(item.title)}</div>
+        <div class="comp-grid-desc">${escH(item.desc)}</div>
+        <div class="comp-grid-cat">Item #${item.id}</div>
+      </div>`;
+    };
     if (modules.length) {
       html += `<div class="section-divider">Specific Modules — Items 1–17</div>
-        <div class="dash-grid">
-          ${modules.map(item => {
-            const d = state[item.id]?.decision || 'undecided';
-            const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
-            return `<div class="grid-card d-${d}" onclick="expandAuditCard(${item.id})">
-              <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-${d}">${labels[d]}</span></div>
-              <div class="grid-title">${item.title}</div>
-            </div>`;
-          }).join('')}
-        </div>`;
+        <div class="comp-grid-wrap">${modules.map(auditTile).join('')}</div>`;
     }
     if (rules.length) {
       html += `<div class="section-divider" style="margin-top:16px">General Rules — Items 18–22</div>
-        <div class="dash-grid">
-          ${rules.map(item => {
-            const d = state[item.id]?.decision || 'undecided';
-            const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
-            return `<div class="grid-card d-${d}" onclick="expandAuditCard(${item.id})">
-              <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-${d}">${labels[d]}</span></div>
-              <div class="grid-title">${item.title}</div>
-            </div>`;
-          }).join('')}
-        </div>`;
+        <div class="comp-grid-wrap">${rules.map(auditTile).join('')}</div>`;
     }
     el.innerHTML = html;
   } else {
@@ -1524,21 +1540,66 @@ function renderCards() {
   }
 }
 
-function expandAuditCard(id) {
-  // Switch to list view and open the card
-  setListView('audit', 'list');
-  setTimeout(() => {
-    if (!state[id]) state[id] = {};
-    state[id].open = true;
-    const el = document.getElementById('card-' + id);
-    if (el) { el.classList.add('open'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  }, 40);
+function expandAuditCard(id) { openAuditModal(id); }
+
+function openAuditModal(id) {
+  const item = ITEMS.find(i => i.id === id);
+  if (!item) return;
+  const modal   = document.getElementById('comp-modal');
+  const content = document.getElementById('comp-modal-content');
+  if (!modal || !content) return;
+
+  const d      = state[item.id]?.decision || 'undecided';
+  const notes  = state[item.id]?.notes    || '';
+  const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
+
+  const comments = item.comments.map(c => `
+    <div class="comment">
+      <div class="comment-who">${c.who}</div>
+      <div class="comment-text">"${escH(c.text)}"</div>
+    </div>`).join('');
+
+  content.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px">
+      <div class="card-num">#${item.id}</div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:var(--text);line-height:1.3">${escH(item.title)}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">${escH(item.desc)}</div>
+        ${item.node ? `<span class="node-tag" style="margin-top:6px;display:inline-block">node ${item.node}</span>` : ''}
+      </div>
+      <span class="badge d-${d}">${labels[d]}</span>
+    </div>
+    ${item.screenshot ? `
+      <div class="card-screenshot" onclick="this.classList.toggle('expanded')" style="margin-bottom:14px">
+        <img src="${item.screenshot}" alt="${escH(item.title)}" loading="lazy">
+        <div class="screenshot-label">Figma screenshot — click to expand</div>
+      </div>` : ''}
+    ${item.hint ? `<div class="hint-box" style="margin-bottom:14px">💡 ${escH(item.hint)}</div>` : ''}
+    <div class="comments-list" style="margin-bottom:14px">${comments}</div>
+    <div class="dec-row">
+      <button class="dec-btn ${d==='keep'?'sel-keep':''}" onclick="decideAndRefreshModal(${item.id},'keep')">✓ Keep / Evolve</button>
+      <button class="dec-btn ${d==='cut'?'sel-cut':''}" onclick="decideAndRefreshModal(${item.id},'cut')">✕ Cut</button>
+      <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decideAndRefreshModal(${item.id},'defer')">→ Defer</button>
+    </div>
+    <div class="notes-label">Notes / Refinements</div>
+    <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
+      oninput="setNotes(${item.id}, this.value)">${escH(notes)}</textarea>
+  `;
+
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function decideAndRefreshModal(id, decision) {
+  decide(id, decision);
+  // Re-open modal to update button states
+  setTimeout(() => openAuditModal(id), 20);
 }
 
 function card(item) {
   const d     = state[item.id]?.decision || 'undecided';
   const notes = state[item.id]?.notes || '';
-  const open  = state[item.id]?.open  || false;
+  const open  = openAuditCards.has(item.id);
 
   const comments = item.comments.map(c => `
     <div class="comment">
@@ -1547,22 +1608,21 @@ function card(item) {
     </div>
   `).join('');
 
-  const nodeTag = item.node
-    ? `<span class="node-tag">node ${item.node}</span>`
-    : '';
+  const nodeTag = item.node ? `<span class="node-tag">node ${item.node}</span>` : '';
+  const auditLabels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
 
   return `
     <div class="card d-${d} ${open ? 'open' : ''}" id="card-${item.id}">
       <div class="card-top" onclick="toggleCard(${item.id})">
-        <div class="card-num">#${item.id}</div>
-        <div class="card-info">
+        <span class="status-label sl-${d}">${auditLabels[d]}</span>
+        <div class="card-info" style="flex:1;min-width:0">
           <div class="card-title">${item.title}</div>
           <div class="card-desc">${item.desc}</div>
-          ${nodeTag}
         </div>
         <div class="card-chevron">▶</div>
       </div>
       <div class="card-body">
+        ${nodeTag ? `<div style="margin:10px 0 6px">${nodeTag}</div>` : ''}
         ${item.screenshot ? `
           <div class="card-screenshot" onclick="this.classList.toggle('expanded')" title="Click to expand / collapse">
             <img src="${item.screenshot}" alt="${item.title}" loading="lazy">
@@ -1807,22 +1867,28 @@ function setFilter(filter, btn) {
 }
 
 function toggleCard(id) {
-  const card = document.getElementById('card-' + id);
-  if (!card) return;
-  const nowOpen = card.classList.toggle('open');
-  if (!state[id]) state[id] = {};
-  state[id].open = nowOpen;
-  save();
+  if (openAuditCards.has(id)) openAuditCards.delete(id);
+  else openAuditCards.add(id);
+  const el = document.getElementById('card-' + id);
+  if (el) el.classList.toggle('open', openAuditCards.has(id));
+}
+
+function toggleDecisionCard(id) {
+  if (openDecisionCards.has(id)) openDecisionCards.delete(id);
+  else openDecisionCards.add(id);
+  const card = document.getElementById('dc-' + id);
+  const body = card?.querySelector('.comp-card-body');
+  if (card) card.classList.toggle('open', openDecisionCards.has(id));
+  if (body) body.classList.toggle('hidden', !openDecisionCards.has(id));
 }
 
 function decide(id, decision) {
   if (!state[id]) state[id] = {};
   // Toggle off if tapping the same button again
   state[id].decision = (state[id].decision === decision) ? null : decision;
-  state[id].open = true;
+  openAuditCards.add(id); // keep card open after deciding, but session-only
   save();
   refresh();
-  // After re-render, re-open the card so they stay in context
   setTimeout(() => {
     const card = document.getElementById('card-' + id);
     if (card) {
@@ -1846,14 +1912,13 @@ function jumpTo(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   document.getElementById('view-audit').classList.add('active');
-  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active'); // Audit Feedback is tab[1]
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.filter-btn').classList.add('active');
   renderAuditDash();
   renderCards();
   setTimeout(() => {
-    if (!state[id]) state[id] = {};
-    state[id].open = true;
+    openAuditCards.add(id);
     const card = document.getElementById('card-' + id);
     if (card) {
       card.classList.add('open');
@@ -2034,24 +2099,38 @@ function renderBlockers() {
   const toggle = viewToggleHtml('blockers');
   const resolved = blockerState.filter(b => b.resolved).length;
 
-  // Section A: Strategic open decisions (always full cards — they need text areas)
+  // Section A: Strategic open decisions — standard comp-card / comp-grid-tile pattern
   const strategicHtml = BLOCKERS.map((q, i) => {
     const b = blockerState[i];
+    const s = b.resolved ? 'done' : (b.answer.trim() ? 'progress' : 'todo');
     if (mode === 'grid') {
-      return `<div class="grid-card ${b.resolved ? 'd-keep' : 'd-undecided'}" style="cursor:default;border-top:3px solid ${b.resolved ? 'var(--keep)' : 'var(--border)'}">
-        <div class="grid-card-top"><span class="grid-num">#${i+1}</span><span class="badge ${b.resolved ? 'd-keep' : 'd-undecided'}">${b.resolved ? 'Resolved' : 'Open'}</span></div>
-        <div class="grid-title" style="font-size:12px">${escH(q)}</div>
-        <button class="blocker-resolve-btn ${b.resolved ? 'undo' : ''}" style="margin-top:8px;width:100%" onclick="toggleBlockerResolved(${i})">${b.resolved ? 'Unmark' : 'Mark resolved'}</button>
-      </div>`;
+      return `
+        <div class="comp-grid-tile" onclick="openBlockerModal(${i})">
+          <span class="status-label sl-${s}">${statusLabel(s)}</span>
+          <div class="comp-grid-name">${escH(bTitle(q))}</div>
+          <div class="comp-grid-desc">${escH(bDesc(q))}</div>
+          <div class="comp-grid-cat">Item #${i + 1}</div>
+        </div>`;
     }
+    const isOpen = openBlockerCards.has(i);
     return `
-      <div class="blocker-card ${b.resolved ? 'resolved' : ''}" id="blocker-${i}">
-        <div class="blocker-question">
-          <span class="status-dot status-${b.resolved ? 'done' : 'todo'}"></span>
-          ${escH(q)}
+      <div class="comp-card ${isOpen ? 'open' : ''}" id="blk-card-${i}">
+        <div class="comp-card-header" onclick="toggleBlockerCard(${i})">
+          <span class="status-label sl-${s}">${statusLabel(s)}</span>
+          <span class="comp-card-name">${escH(bTitle(q))}</span>
+          <span class="comp-chevron">▶</span>
         </div>
-        <textarea class="blocker-answer" placeholder="Your decision or answer…" oninput="updateBlockerAnswer(${i}, this.value)">${escH(b.answer)}</textarea>
-        <button class="blocker-resolve-btn ${b.resolved ? 'undo' : ''}" onclick="toggleBlockerResolved(${i})">${b.resolved ? 'Mark unresolved' : 'Mark resolved'}</button>
+        <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
+          <p style="font-size:13px;color:var(--muted);margin:12px 0 14px;line-height:1.5">${escH(bDesc(q))}</p>
+          <div class="notes-label">Decision / Answer</div>
+          <textarea class="notes-input" placeholder="Write your decision here…"
+            oninput="updateBlockerAnswer(${i}, this.value)">${escH(b.answer)}</textarea>
+          <div class="comp-card-actions">
+            ${b.resolved
+              ? `<button class="comp-unmark-btn" onclick="toggleBlockerFromCard(${i})">Mark unresolved</button>`
+              : `<button class="comp-mark-btn" onclick="toggleBlockerFromCard(${i})">Mark resolved</button>`}
+          </div>
+        </div>
       </div>`;
   }).join('');
 
@@ -2061,7 +2140,7 @@ function renderBlockers() {
     ? '<div class="empty" style="padding:12px 0;font-size:13px">No deferred audit items.</div>'
     : mode === 'grid'
       ? `<div class="dash-grid">${deferredAudit.map(item => `
-          <div class="grid-card d-defer" onclick="expandAuditCard(${item.id})">
+          <div class="grid-card d-defer" onclick="openAuditModal(${item.id})" style="cursor:pointer">
             <div class="grid-card-top"><span class="grid-num">#${item.id}</span><span class="badge d-defer">Defer</span></div>
             <div class="grid-title">${escH(item.title)}</div>
           </div>`).join('')}</div>`
@@ -2080,35 +2159,63 @@ function renderBlockers() {
     ? '<div class="empty" style="padding:12px 0;font-size:13px">No deferred components.</div>'
     : mode === 'grid'
       ? `<div class="comp-grid-wrap">${deferredCompHtmlParts.map(c => `
-          <div class="comp-grid-tile deferred" style="cursor:default">
+          <div class="comp-grid-tile deferred" onclick="openGridModal('${c.type}','${c.id}')">
             <div class="comp-grid-tile-top"><span class="status-dot status-deferred"></span><span class="comp-badge comp-deferred" style="font-size:9px">Deferred</span></div>
             <div class="comp-grid-name">${escH(c.name)}</div>
             <div class="comp-grid-cat">${escH(c.label)} · ${escH(c.cat)}</div>
-            <button class="comp-unmark-btn" style="margin-top:8px;width:100%;font-size:10px" onclick="setCompStatus('${c.type}','${c.id}','todo');renderBlockers()">Restore</button>
           </div>`).join('')}</div>`
       : deferredCompHtmlParts.map(c => renderDeferredCompCard(c.type, c.id, c.name, c.cat, c.label)).join('');
 
+  const blkFilterBar = `<div class="filter-bar" style="margin-bottom:0">
+    <button class="filter-btn ${blockersFilter==='all'?'active':''}" onclick="setBlockersFilter('all',this)">All</button>
+    <button class="filter-btn ${blockersFilter==='strategic'?'active':''}" onclick="setBlockersFilter('strategic',this)">Strategic (${BLOCKERS.length})</button>
+    <button class="filter-btn ${blockersFilter==='deferred-audit'?'active':''}" onclick="setBlockersFilter('deferred-audit',this)">Deferred Audit (${deferredAudit.length})</button>
+    <button class="filter-btn ${blockersFilter==='deferred-comp'?'active':''}" onclick="setBlockersFilter('deferred-comp',this)">Deferred Components (${deferredCompHtmlParts.length})</button>
+  </div>`;
+
+  const blkPct = Math.round(resolved/BLOCKERS.length*100);
+
   el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="comp-progress-row" style="flex:1;margin:0 16px 0 0">
-        <span class="comp-prog-label">${resolved} of ${BLOCKERS.length} strategic decisions resolved</span>
-        <div class="comp-prog-track"><div class="comp-prog-fill" style="width:${Math.round(resolved/BLOCKERS.length*100)}%"></div></div>
-        <span class="comp-prog-pct">${Math.round(resolved/BLOCKERS.length*100)}%</span>
-      </div>
+    <div class="comp-progress-row" style="margin-bottom:14px">
+      <span class="comp-prog-label">${resolved} of ${BLOCKERS.length} strategic decisions resolved</span>
+      <div class="comp-prog-track"><div class="comp-prog-fill" style="width:${blkPct}%"></div></div>
+      <span class="comp-prog-pct">${blkPct}%</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px">
+      ${blkFilterBar}
       ${toggle}
     </div>
     <div class="section-label" style="margin-bottom:10px">Strategic Open Decisions (${BLOCKERS.length})</div>
-    ${mode === 'grid' ? `<div class="dash-grid">${strategicHtml}</div>` : strategicHtml}
-    <div class="section-label" style="margin:28px 0 10px">Deferred Audit Items (${deferredAudit.length})</div>
-    ${deferredAuditHtml}
-    <div class="section-label" style="margin:28px 0 10px">Deferred Components (${deferredCompHtmlParts.length})</div>
-    ${deferredCompHtml}
+    ${(blockersFilter === 'all' || blockersFilter === 'strategic') ? (mode === 'grid' ? `<div class="comp-grid-wrap">${strategicHtml}</div>` : strategicHtml) : ''}
+    ${(blockersFilter === 'all' || blockersFilter === 'deferred-audit') ? `<div class="section-label" style="margin:${blockersFilter==='all'?'28px':'0'} 0 10px">Deferred Audit Items (${deferredAudit.length})</div>${deferredAuditHtml}` : ''}
+    ${(blockersFilter === 'all' || blockersFilter === 'deferred-comp') ? `<div class="section-label" style="margin:${blockersFilter==='all'?'28px':'0'} 0 10px">Deferred Components (${deferredCompHtmlParts.length})</div>${deferredCompHtml}` : ''}
   `;
 }
 
+// Track open blocker list cards
+const openBlockerCards = new Set();
+
 function updateBlockerAnswer(index, value) {
   blockerState[index].answer = value;
+  if (!blockerState[index].resolved && value.trim()) {
+    const sl = document.querySelector(`#blk-card-${index} .status-label`);
+    if (sl) { sl.className = 'status-label sl-progress'; sl.textContent = 'In progress'; }
+  }
   saveBlockers();
+}
+
+function setBlockersFilter(filter) {
+  blockersFilter = filter;
+  const y = window.scrollY;
+  renderBlockers();
+  window.scrollTo(0, y);
+}
+
+function setDecisionsFilter(filter) {
+  decisionsFilter = filter;
+  const y = window.scrollY;
+  renderDecisionsSummary();
+  window.scrollTo(0, y);
 }
 
 function toggleBlockerResolved(index) {
@@ -2118,6 +2225,66 @@ function toggleBlockerResolved(index) {
   renderBlockers();
   renderNewDashboard();
   window.scrollTo(0, y);
+}
+
+function toggleBlockerCard(index) {
+  if (openBlockerCards.has(index)) openBlockerCards.delete(index);
+  else openBlockerCards.add(index);
+  const card = document.getElementById('blk-card-' + index);
+  const body = card?.querySelector('.comp-card-body');
+  if (card) card.classList.toggle('open', openBlockerCards.has(index));
+  if (body) body.classList.toggle('hidden', !openBlockerCards.has(index));
+}
+
+function toggleBlockerFromCard(index) {
+  blockerState[index].resolved = !blockerState[index].resolved;
+  saveBlockers();
+  const y = window.scrollY;
+  renderBlockers();
+  renderNewDashboard();
+  window.scrollTo(0, y);
+}
+
+function openBlockerModal(index) {
+  const b = blockerState[index];
+  const q = BLOCKERS[index];
+  const modal   = document.getElementById('comp-modal');
+  const content = document.getElementById('comp-modal-content');
+  if (!modal || !content) return;
+
+  const s = b.resolved ? 'done' : (b.answer.trim() ? 'progress' : 'todo');
+
+  content.innerHTML = `
+    <div style="margin-bottom:20px">
+      <span class="status-label sl-${s}" style="margin-bottom:10px;display:inline-block">${statusLabel(s)}</span>
+      <div style="font-size:17px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:6px">${escH(bTitle(q))}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:4px">${escH(bDesc(q))}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em">Item #${index + 1} of ${BLOCKERS.length}</div>
+    </div>
+    <div class="notes-label">Decision / Answer</div>
+    <textarea class="notes-input" style="min-height:100px" placeholder="Write your decision here…"
+      oninput="updateBlockerAnswerModal(${index}, this.value)">${escH(b.answer)}</textarea>
+    <div class="comp-card-actions" style="margin-top:16px">
+      ${b.resolved
+        ? `<button class="comp-unmark-btn" onclick="toggleBlockerFromModal(${index})">Mark unresolved</button>`
+        : `<button class="comp-mark-btn" onclick="toggleBlockerFromModal(${index})">Mark resolved</button>`}
+    </div>`;
+
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function updateBlockerAnswerModal(index, value) {
+  blockerState[index].answer = value;
+  saveBlockers();
+}
+
+function toggleBlockerFromModal(index) {
+  blockerState[index].resolved = !blockerState[index].resolved;
+  saveBlockers();
+  openBlockerModal(index);  // refresh modal state
+  renderBlockers();
+  renderNewDashboard();
 }
 
 // ─────────────────────────────────────────────
@@ -2138,18 +2305,31 @@ function renderDecisionsSummary() {
 
   const allCompDone = [...orgDone, ...molDone, ...atmDone];
 
+  const compTile = i => `
+    <div class="comp-grid-tile" style="cursor:default">
+      <span class="status-label sl-done">Ready</span>
+      <div class="comp-grid-name">${escH(i.name)}</div>
+      <div class="comp-grid-cat">${escH(i.cat)}</div>
+    </div>`;
+  const compRow = i => `
+    <div class="comp-card" style="cursor:default">
+      <div class="comp-card-header" style="cursor:default">
+        <span class="status-label sl-done">Ready</span>
+        <span class="comp-card-name">${escH(i.name)}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto">${escH(i.cat)}</span>
+      </div>
+    </div>`;
+
   const compSection = compTotal === 0
-    ? '<div class="empty" style="padding:16px 0;text-align:left">No components marked ready yet.</div>'
-    : mode === 'grid'
-      ? `<div class="comp-grid-wrap">${allCompDone.map(i => `
-          <div class="comp-grid-tile" style="cursor:default">
-            <div class="comp-grid-tile-top"><span class="status-dot status-done"></span><span class="comp-badge comp-done" style="font-size:9px">Ready</span></div>
-            <div class="comp-grid-name">${escH(i.name)}</div>
-            <div class="comp-grid-cat">${escH(i.cat)}</div>
-          </div>`).join('')}</div>`
-      : `<div class="section-divider">Organisms — ${orgDone.length}</div>${orgDone.map(i => `<div class="comp-summary-row"><span class="status-dot status-done"></span><span>${escH(i.name)}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span></div>`).join('')}
-         <div class="section-divider">Molecules — ${molDone.length}</div>${molDone.map(i => `<div class="comp-summary-row"><span class="status-dot status-done"></span><span>${escH(i.name)}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span></div>`).join('')}
-         <div class="section-divider">Atoms — ${atmDone.length}</div>${atmDone.map(i => `<div class="comp-summary-row"><span class="status-dot status-done"></span><span>${escH(i.name)}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)">${escH(i.cat)}</span></div>`).join('')}`;
+    ? '<div class="empty" style="padding:16px 0;text-align:left">No components marked ready yet. Mark items as ready in the Components tab.</div>'
+    : ['Organisms','Molecules','Atoms'].map((label, li) => {
+        const items = [orgDone, molDone, atmDone][li];
+        if (!items.length) return '';
+        return `<div class="section-divider">${label} — ${items.length}</div>
+          ${mode === 'grid'
+            ? `<div class="comp-grid-wrap">${items.map(compTile).join('')}</div>`
+            : items.map(compRow).join('')}`;
+      }).join('');
 
   // Audit decisions
   const s = stats();
@@ -2159,37 +2339,81 @@ function renderDecisionsSummary() {
   const defers = ITEMS.filter(i => state[i.id]?.decision === 'defer');
   const allDecided = [...keeps, ...cuts, ...defers];
 
+  const auditTileD = i => {
+    const d = state[i.id].decision;
+    return `<div class="comp-grid-tile" onclick="openAuditModal(${i.id})">
+      <span class="status-label sl-${d}">${decLabels[d]}</span>
+      <div class="comp-grid-name">${escH(i.title)}</div>
+      <div class="comp-grid-desc">${escH(i.desc)}</div>
+      <div class="comp-grid-cat">Item #${i.id}</div>
+    </div>`;
+  };
+  const auditRowD = i => {
+    const d    = state[i.id]?.decision || 'undecided';
+    const open = openDecisionCards.has(i.id);
+    const notes = state[i.id]?.notes || '';
+    const comments = i.comments.map(c => `
+      <div class="comment">
+        <div class="comment-who">${c.who}</div>
+        <div class="comment-text">"${escH(c.text)}"</div>
+      </div>`).join('');
+    return `
+      <div class="comp-card ${open ? 'open' : ''}" id="dc-${i.id}">
+        <div class="comp-card-header" onclick="toggleDecisionCard(${i.id})">
+          <span class="status-label sl-${d}">${decLabels[d] || 'Undecided'}</span>
+          <span class="comp-card-name">${escH(i.title)}</span>
+          <span class="comp-chevron">▶</span>
+        </div>
+        <div class="comp-card-body ${open ? '' : 'hidden'}">
+          <p style="font-size:13px;color:var(--muted);margin:12px 0 10px;line-height:1.5">${escH(i.desc)}</p>
+          ${i.hint ? `<div class="hint-box" style="margin-bottom:10px">💡 ${escH(i.hint)}</div>` : ''}
+          ${i.node ? `<span class="node-tag" style="margin-bottom:12px;display:inline-block">node ${i.node}</span>` : ''}
+          ${i.screenshot ? `
+            <div class="card-screenshot" onclick="this.classList.toggle('expanded')" style="margin-bottom:12px">
+              <img src="${i.screenshot}" alt="${escH(i.title)}" loading="lazy">
+              <div class="screenshot-label">Figma screenshot — click to expand</div>
+            </div>` : ''}
+          <div class="comments-list" style="margin-bottom:12px">${comments}</div>
+          <div class="dec-row">
+            <button class="dec-btn ${d==='keep'?'sel-keep':''}" onclick="decide(${i.id},'keep')">✓ Keep / Evolve</button>
+            <button class="dec-btn ${d==='cut'?'sel-cut':''}" onclick="decide(${i.id},'cut')">✕ Cut</button>
+            <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${i.id},'defer')">→ Defer</button>
+          </div>
+          <div class="notes-label" style="margin-top:12px">Notes / Refinements</div>
+          <textarea class="notes-input" placeholder="Add context, conditions, or what to keep/remove..."
+            oninput="setNotes(${i.id}, this.value)">${escH(notes)}</textarea>
+        </div>
+      </div>`;
+  };
+
   const auditSection = s.total === 0
-    ? '<div class="empty" style="padding:16px 0;text-align:left">No audit decisions made yet.</div>'
+    ? '<div class="empty" style="padding:16px 0;text-align:left">No audit decisions made yet. Make Keep/Cut/Defer decisions in Audit Feedback.</div>'
     : mode === 'grid'
-      ? `<div class="dash-grid">${allDecided.map(i => {
-          const d = state[i.id].decision;
-          return `<div class="grid-card d-${d}" style="cursor:default">
-            <div class="grid-card-top"><span class="grid-num">#${i.id}</span><span class="badge d-${d}">${decLabels[d]}</span></div>
-            <div class="grid-title">${escH(i.title)}</div>
-          </div>`;
-        }).join('')}</div>`
-      : allDecided.map(i => {
-          const d = state[i.id].decision;
-          return `<div class="dash-row d-${d}" style="cursor:default">
-            <span class="badge d-${d}">${decLabels[d]}</span>
-            <span class="dash-name">${escH(i.title)}</span>
-            <span class="dash-num">#${i.id}</span>
-          </div>`;
-        }).join('');
+      ? `<div class="comp-grid-wrap">${allDecided.map(auditTileD).join('')}</div>`
+      : allDecided.map(auditRowD).join('');
+
+  const decFilterBar = `<div class="filter-bar" style="margin-bottom:0">
+    <button class="filter-btn ${decisionsFilter==='all'?'active':''}" onclick="setDecisionsFilter('all')">All</button>
+    <button class="filter-btn ${decisionsFilter==='components'?'active':''}" onclick="setDecisionsFilter('components')">Components (${compTotal})</button>
+    <button class="filter-btn ${decisionsFilter==='audit'?'active':''}" onclick="setDecisionsFilter('audit')">Audit Decisions (${s.total})</button>
+  </div>`;
 
   el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="section-label" style="margin:0">Components Ready — ${compTotal} of ${grandTotal}
-        <span class="comp-summary-link" style="margin-left:12px" onclick="switchTabByName('components')">Go to Components →</span>
-      </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px">
+      ${decFilterBar}
       ${toggle}
     </div>
-    ${compSection}
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:28px 0 10px">
-      <div class="section-label" style="margin:0">Audit Decisions — ${s.total} of 22</div>
-    </div>
-    ${auditSection}
+    ${(decisionsFilter === 'all' || decisionsFilter === 'components') ? `
+      <div class="section-label" style="margin-bottom:10px">
+        Components Ready — ${compTotal} of ${grandTotal}
+        <span class="comp-summary-link" style="margin-left:12px" onclick="switchTabByName('components')">Go to Components →</span>
+      </div>
+      ${compSection}` : ''}
+    ${decisionsFilter === 'all' && compTotal > 0 && s.total > 0 ? `
+      <div style="border-top:2px solid var(--border);margin:36px 0 28px"></div>` : ''}
+    ${(decisionsFilter === 'all' || decisionsFilter === 'audit') ? `
+      <div class="section-label" style="margin-bottom:10px">Audit Decisions — ${s.total} of 22</div>
+      ${auditSection}` : ''}
   `;
 }
 
@@ -2595,10 +2819,7 @@ function gridTile(id, name, cat, status, isCustom, tier) {
   return `
     <div class="comp-grid-tile ${isCustom ? 'custom-item' : ''} ${status === 'deferred' ? 'deferred' : ''}"
          onclick="openGridModal('${tier}','${id}')">
-      <div class="comp-grid-tile-top">
-        <span class="status-dot status-${status}"></span>
-        <span class="comp-badge comp-${status}" style="font-size:9px">${statusLabel(status)}</span>
-      </div>
+      <span class="status-label sl-${status}">${statusLabel(status)}</span>
       <div class="comp-grid-name">${escH(name)}</div>
       <div class="comp-grid-cat">${escH(cat)}</div>
     </div>`;
@@ -2649,9 +2870,8 @@ function renderOrganisms() {
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
-              <span class="status-dot status-${d.status}" id="dot-${def.id}"></span>
+              <span class="status-label sl-${d.status}" id="sl-${def.id}">${statusLabel(d.status)}</span>
               <span class="comp-card-name">${escH(def.name)}</span>
-              <span class="comp-badge comp-${d.status}" id="badge-${def.id}">${statusLabel(d.status)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}" id="ccb-${def.id}">
@@ -2681,12 +2901,11 @@ function renderOrganisms() {
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
-              <span class="status-dot status-${c.status}"></span>
+              <span class="status-label sl-${c.status}">${statusLabel(c.status)}</span>
               <input type="text" value="${escH(c.name)}" placeholder="Component name"
                 style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
                 oninput="updateCustomName('organisms','${c.id}',this.value)">
               <span class="custom-label">Custom</span>
-              <span class="comp-badge comp-${c.status}" style="margin-left:8px">${statusLabel(c.status)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
@@ -2732,9 +2951,8 @@ function renderMolecules() {
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
-              <span class="status-dot status-${d.status}" id="dot-${def.id}"></span>
+              <span class="status-label sl-${d.status}" id="sl-${def.id}">${statusLabel(d.status)}</span>
               <span class="comp-card-name">${escH(def.name)}</span>
-              <span class="comp-badge comp-${d.status}" id="badge-${def.id}">${statusLabel(d.status)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
@@ -2802,9 +3020,8 @@ function renderAtoms() {
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
-              <span class="status-dot status-${d.status}" id="dot-${def.id}"></span>
+              <span class="status-label sl-${d.status}" id="sl-${def.id}">${statusLabel(d.status)}</span>
               <span class="comp-card-name">${escH(def.name)}</span>
-              <span class="comp-badge comp-${d.status}" id="badge-${def.id}">${statusLabel(d.status)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
@@ -2926,10 +3143,8 @@ function setCompStatus(type, id, status) {
 }
 
 function updateStatusUI(id, status) {
-  const dot   = document.getElementById('dot-'   + id);
-  const badge = document.getElementById('badge-' + id);
-  if (dot)   dot.className = 'status-dot status-' + status;
-  if (badge) { badge.className = 'comp-badge comp-' + status; badge.textContent = statusLabel(status); }
+  const sl = document.getElementById('sl-' + id);
+  if (sl) { sl.className = 'status-label sl-' + status; sl.textContent = statusLabel(status); }
 }
 
 // ── View toggle ──
