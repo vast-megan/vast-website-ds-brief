@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vast — Brief Builder</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Vast design tokens — from Pulse / Website Refresh design system */
+  --bg:        #F9FAFB;
+  --surface:   #FFFFFF;
+  --surface2:  #ECE8E3;
+  --surface3:  #FDFCF4;
+  --border:    #DBDAD5;
+  --text:      #2A2C2F;
+  --muted:     #5A5754;
+  --faint:     #897F75;
+  --orange:    #FF5623;
+  --orange-dim: rgba(255,86,35,0.08);
+  --keep:      #16a34a;
+  --keep-dim:  rgba(22,163,74,0.09);
+  --cut:       #dc2626;
+  --cut-dim:   rgba(220,38,38,0.08);
+  --defer:     #b45309;
+  --defer-dim: rgba(180,83,9,0.08);
+  --evolve:    #0e7490;
+  --evolve-dim: rgba(14,116,144,0.08);
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
+  --radius:    8px;
+  --radius-sm: 4px;
+  --mono: 'Phonic Mono', 'Phonic', 'Instrument Mono', monospace;
+}
+
+body {
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface3);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 52px;
+}
+
+.header-logo {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.header-divider {
+  color: var(--border);
+  font-size: 18px;
+  font-weight: 200;
+}
+
+.header-sub {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tabs { display: flex; gap: 4px; }
+
+.tab {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.tab:hover { color: var(--text); background: var(--surface2); }
+.tab.active { background: var(--text); color: #FFF; border-color: var(--text); }
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.progress-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.progress-bar-wrap {
+  width: 90px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--orange);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ── Layout ── */
+.content {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 32px 28px 100px;
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Dashboard ── */
+.scorecard {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.score-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.score-num {
+  font-family: var(--mono);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.score-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.score-box.s-total .score-num { color: var(--text); }
+.score-box.s-keep  .score-num { color: var(--keep); }
+.score-box.s-cut   .score-num { color: var(--cut); }
+.score-box.s-defer  .score-num { color: var(--defer); }
+.score-box.s-evolve .score-num { color: var(--evolve); }
+
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.dash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s;
+  box-shadow: var(--shadow-sm);
+}
+
+.dash-row:hover { background: var(--surface2); }
+.dash-row.d-keep   { border-left-color: var(--keep); }
+.dash-row.d-cut    { border-left-color: var(--cut); }
+.dash-row.d-defer  { border-left-color: var(--defer); }
+.dash-row.d-evolve { border-left-color: var(--evolve); }
+
+.badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  min-width: 76px;
+  text-align: center;
+}
+
+.badge.d-keep      { background: var(--keep-dim);   color: var(--keep); }
+.badge.d-cut       { background: var(--cut-dim);    color: var(--cut); }
+.badge.d-defer     { background: var(--defer-dim);  color: var(--defer); }
+.badge.d-evolve    { background: var(--evolve-dim); color: var(--evolve); }
+.badge.d-undecided { background: var(--surface2);   color: var(--muted); }
+
+.dash-name { font-size: 13px; flex: 1; color: var(--text); }
+.dash-num  { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+
+/* ── Decisions ── */
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.filter-btn:hover { background: var(--surface2); color: var(--text); }
+.filter-btn.active { background: var(--text); color: #FFF; border-color: var(--text); }
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-divider {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 18px 0 6px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+
+.section-divider:first-child { border-top: none; padding-top: 0; }
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.card.d-keep   { border-left-color: var(--keep); }
+.card.d-cut    { border-left-color: var(--cut); }
+.card.d-defer  { border-left-color: var(--defer); }
+.card.d-evolve { border-left-color: var(--evolve); }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px 18px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.card-top:hover { background: var(--bg); }
+
+.card-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--faint);
+  flex-shrink: 0;
+  padding-top: 3px;
+  min-width: 20px;
+  letter-spacing: 0.04em;
+}
+
+.card-info { flex: 1; min-width: 0; }
+.card-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: var(--text); }
+.card-desc  { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+.card-chevron {
+  flex-shrink: 0;
+  color: var(--faint);
+  font-size: 9px;
+  transition: transform 0.2s;
+  margin-top: 5px;
+}
+
+.card.open .card-chevron { transform: rotate(90deg); }
+
+.card-body {
+  display: none;
+  padding: 0 18px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.card.open .card-body { display: block; }
+
+.hint-box {
+  margin: 14px 0 10px;
+  padding: 9px 12px;
+  background: var(--orange-dim);
+  border-left: 3px solid var(--orange);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.node-tag {
+  display: inline-block;
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--surface2);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
+}
+
+.comments-list {
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comment {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.comment-who {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.comment-text {
+  font-size: 13px;
+  color: var(--text);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.dec-row {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0 12px;
+}
+
+.dec-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  transition: all 0.15s;
+}
+
+.dec-btn:hover { color: var(--text); background: var(--border); }
+
+.dec-btn.sel-keep   { background: var(--keep-dim);   color: var(--keep);   border-color: var(--keep); }
+.dec-btn.sel-cut    { background: var(--cut-dim);    color: var(--cut);    border-color: var(--cut); }
+.dec-btn.sel-defer  { background: var(--defer-dim);  color: var(--defer);  border-color: var(--defer); }
+.dec-btn.sel-evolve { background: var(--evolve-dim); color: var(--evolve); border-color: var(--evolve); }
+
+.notes-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.notes-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  padding: 9px 12px;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.notes-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-dim); }
+.notes-input::placeholder { color: var(--faint); }
+
+/* ── Brief ── */
+.brief-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.copy-btn {
+  padding: 7px 18px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.copy-btn:hover { opacity: 0.85; }
+.copy-btn.copied { background: var(--keep); }
+
+.brief-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: var(--text);
+  min-height: 440px;
+  box-shadow: var(--shadow-sm);
+}
+
+.brief-placeholder {
+  font-style: italic;
+  color: var(--muted);
+  font-family: 'Instrument Sans', sans-serif;
+}
+
+/* ── View toggle ── */
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+}
+
+.vtoggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.vtoggle:hover { color: var(--text); }
+.vtoggle.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+
+/* ── Dash grid ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.grid-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: background 0.12s, border-top-color 0.15s;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 90px;
+}
+
+.grid-card:hover { background: var(--bg); }
+.grid-card.d-keep   { border-top-color: var(--keep); }
+.grid-card.d-cut    { border-top-color: var(--cut); }
+.grid-card.d-defer  { border-top-color: var(--defer); }
+.grid-card.d-evolve { border-top-color: var(--evolve); }
+
+.grid-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grid-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}
+
+.grid-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+  flex: 1;
+}
+
+/* ── Key ── */
+.key {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.key-item strong { color: var(--text); }
+
+.key-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── Screenshot ── */
+.card-screenshot {
+  margin: 14px 0 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--surface2);
+}
+
+.card-screenshot img {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: max-height 0.35s ease;
+}
+
+.card-screenshot.expanded { cursor: zoom-out; }
+.card-screenshot.expanded img { max-height: 800px; object-fit: contain; }
+
+.screenshot-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+  text-align: center;
+  padding: 5px 8px;
+  background: var(--surface2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <img src="Vast_Wordmark_Meteorite_Black_RGB.png" alt="Vast" style="height:18px;display:block;">
+  <div class="header-divider">|</div>
+  <div class="header-sub">Website Refresh — Brief Builder</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dashboard', this)">Dashboard</button>
+    <button class="tab" onclick="switchTab('decisions', this)">Decisions</button>
+    <button class="tab" onclick="switchTab('brief', this)">Brief</button>
+  </div>
+
+  <div class="header-right">
+    <div class="progress-text" id="prog-text">0 of 22 decided</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="scorecard">
+      <div class="score-box s-total">
+        <div class="score-num" id="sc-total">0</div>
+        <div class="score-label">Decided</div>
+      </div>
+      <div class="score-box s-keep">
+        <div class="score-num" id="sc-keep">0</div>
+        <div class="score-label">Keep</div>
+      </div>
+      <div class="score-box s-cut">
+        <div class="score-num" id="sc-cut">0</div>
+        <div class="score-label">Cut</div>
+      </div>
+      <div class="score-box s-defer">
+        <div class="score-num" id="sc-defer">0</div>
+        <div class="score-label">Defer</div>
+      </div>
+      <div class="score-box s-evolve">
+        <div class="score-num" id="sc-evolve">0</div>
+        <div class="score-label">Evolve</div>
+      </div>
+    </div>
+
+    <div class="key">
+      <div class="key-item">
+        <span class="key-dot" style="background:var(--keep)"></span>
+        <span><strong>Keep</strong> — launch-critical, stays in scope</span>
+      </div>
+      <div class="key-item">
+        <span class="key-dot" style="background:var(--cut)"></span>
+        <span><strong>Cut</strong> — remove entirely, not needed for launch</span>
+      </div>
+      <div class="key-item">
+        <span class="key-dot" style="background:var(--defer)"></span>
+        <span><strong>Defer</strong> — good idea, revisit after launch</span>
+      </div>
+      <div class="key-item">
+        <span class="key-dot" style="background:var(--evolve)"></span>
+        <span><strong>Evolve</strong> — keep it, but it needs iteration before it's ready</span>
+      </div>
+      <div class="key-item">
+        <span class="key-dot" style="background:var(--border)"></span>
+        <span><strong>Undecided</strong> — needs a decision before briefing Antinomy</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="section-label" style="margin-bottom:0">All 22 Items — click any to open</div>
+      <div class="view-toggle">
+        <button class="vtoggle active" id="vt-list" onclick="setDashView('list')" title="List view">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+        </button>
+        <button class="vtoggle" id="vt-grid" onclick="setDashView('grid')" title="Grid view">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/><rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="dash-list"></div>
+  </div>
+
+  <!-- DECISIONS -->
+  <div class="view" id="view-decisions">
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All (22)</button>
+      <button class="filter-btn" onclick="setFilter('undecided', this)">Undecided</button>
+      <button class="filter-btn" onclick="setFilter('keep', this)">Keep</button>
+      <button class="filter-btn" onclick="setFilter('cut', this)">Cut</button>
+      <button class="filter-btn" onclick="setFilter('defer', this)">Defer</button>
+      <button class="filter-btn" onclick="setFilter('evolve', this)">Evolve</button>
+    </div>
+    <div class="cards-list" id="cards-list"></div>
+  </div>
+
+  <!-- BRIEF -->
+  <div class="view" id="view-brief">
+    <div class="brief-toolbar">
+      <div class="section-label" style="margin-bottom:0">Auto-generated brief — updates as you decide</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyBrief()">Copy to Clipboard</button>
+    </div>
+    <div class="brief-box" id="brief-box"></div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA — All 22 items
+// ─────────────────────────────────────────────
+const ITEMS = [
+  // ── SPECIFIC MODULES (1–17) ──
+  {
+    id: 1, node: "2184:6360", screenshot: 'screenshots/01-card-info.png', type: "module",
+    title: "Card Info Module",
+    desc: "Cards with additional information underneath",
+    hint: "Two voices questioning whether this is needed at all.",
+    comments: [
+      { who: "Megan", text: "I don't think we really need this." },
+      { who: "Adriana (Antinomy)", text: "Can we trim the amount of info underneath the cards?" }
+    ]
+  },
+  {
+    id: 2, node: "1808:194", screenshot: 'screenshots/02-footer-paragraph.png', type: "module",
+    title: "Footer Paragraph Content",
+    desc: "Paragraph text block inside the footer",
+    hint: "Megan has proposed a clear rule: long headline OR short headline + paragraph — never both.",
+    comments: [
+      { who: "Megan", text: "Could you try a footer where this is removed." },
+      { who: "Megan", text: "Delete this paragraph. Internal rule: 1. Long headline + no paragraph, or 2. Short headline + paragraph — but never a long headline AND a paragraph." }
+    ]
+  },
+  {
+    id: 3, node: "1504:2468", screenshot: 'screenshots/03-dark-overlay-texture.png', type: "module",
+    title: "Dark Overlay Texture Module",
+    desc: "Module with a dark overlay over a texture background — also the most-commented node (15 comments)",
+    hint: "Hillary has a strong objection to the dark overlay. Texture alone may be fine.",
+    comments: [
+      { who: "Hillary", text: "This takes up too much space and I don't like the dark overlay over the texture. I'm good to have a texture if it's not overlaid to be darker." },
+      { who: "Hillary", text: "This feels super big — I think we should simplify what we already have in terms of design." }
+    ]
+  },
+  {
+    id: 4, node: "2080:9280", screenshot: 'screenshots/04-contact-button.png', type: "module",
+    title: "Contact Button Placement",
+    desc: "Contact button placed in a specific module where it feels out of place",
+    hint: "James explicitly wants it removed from this location.",
+    comments: [
+      { who: "James", text: "Would remove contact button here — feels a little out of place." }
+    ]
+  },
+  {
+    id: 5, node: "1504:1864", screenshot: 'screenshots/05-info-dense-title.png', type: "module",
+    title: "Info-Dense Title Module",
+    desc: "Module with multiple pieces of info + a title",
+    hint: "Megan likes the concept but wants it stripped down to just a big type moment.",
+    comments: [
+      { who: "Megan", text: "There's something about this I really like — maybe need to use a big type moment for the title, and remove the other pieces of info and keep it simple." }
+    ]
+  },
+  {
+    id: 6, node: "1504:1181", screenshot: 'screenshots/06-full-takeover.png', type: "module",
+    title: "Full Takeover Module",
+    desc: "Full-screen takeover design pattern",
+    hint: "Megan wants something in between the full takeover and the current state — not necessarily a hard cut.",
+    comments: [
+      { who: "Megan", text: "This is just too much going on. Can we find something in between this full takeover and where we are now." }
+    ]
+  },
+  {
+    id: 7, node: "1504:345", screenshot: 'screenshots/07-technical-diagrams.png', type: "module",
+    title: "Technical Diagrams Module",
+    desc: "Technical diagrams with callouts — style unclear (orange lines? square ends?)",
+    hint: "Keep but lock the callout style. James is asking for decisions here, not removal.",
+    comments: [
+      { who: "James", text: "How can we simplify these diagrams — using tabs to divide and organize information. What is our callout style? E.g. do we always use orange lines with square ends?" }
+    ]
+  },
+  {
+    id: 8, node: "1504:596", screenshot: 'screenshots/08-specs-comparison.png', type: "module",
+    title: "Detailed Specs Comparison",
+    desc: "Technical specifications comparison module",
+    hint: "Keep but simplify. James references Apple and Impulse as the target benchmark.",
+    comments: [
+      { who: "James", text: "How can we simplify and make more legible — what do we want to communicate here? What are the main things people need to understand? Apple and Impulse is a great example." }
+    ]
+  },
+  {
+    id: 9, node: "1504:532", screenshot: 'screenshots/09-carousel-cards.png', type: "module",
+    title: "Carousel with Card Overlays",
+    desc: "Image carousel with card overlays on top of images",
+    hint: "Clear direction from Megan: keep the carousel, remove the cards. Images are the focus.",
+    comments: [
+      { who: "Megan", text: "I think we remove cards entirely from carousels — if there is additional content for each, it's below or above in a simple way. Keep the images the main focus." }
+    ]
+  },
+  {
+    id: 10, node: "1504:3223", screenshot: 'screenshots/10-hero-cta.png', type: "module",
+    title: "Hero CTA Module",
+    desc: "Hero area with long headline + long copy + heavy CTA button",
+    hint: "Too much weight up top. Also: if CTA is in the nav, it shouldn't repeat in the hero.",
+    comments: [
+      { who: "Abram", text: "With the long headline, long copy and a heavy CTA this is just all adding too much weight up top. I like the new CTA direction but wouldn't the 'Create your mission' CTA still technically be visible in the top nav in this instance?" }
+    ]
+  },
+  {
+    id: 11, node: "1504:720", screenshot: 'screenshots/11-center-aligned-1.png', type: "module",
+    title: "Center-Aligned Content Block",
+    desc: "Center-aligned content layout — one of two flagged center-aligned modules",
+    hint: "Needs a rule, not necessarily a cut. When is center alignment OK for Vast?",
+    comments: [
+      { who: "Abram", text: "I'm intrigued by this, but I think we want to be careful about too much center-aligned content. Not that it can't exist at all — but I feel like we aren't leveraging that kind of style for how we present our content." }
+    ]
+  },
+  {
+    id: 12, node: "1504:2308", screenshot: 'screenshots/12-center-aligned-2.png', type: "module",
+    title: "Second Center-Aligned Module",
+    desc: "Another center-aligned layout — Abram says it doesn't feel like 'us'",
+    hint: "Abram's concern is brand fit, not just density. May be a cut.",
+    comments: [
+      { who: "Abram", text: "I want to be careful about too much center-aligned content. It doesn't really feel like 'us' — but overall I agree with the logic of avoiding too many small contained elements." }
+    ]
+  },
+  {
+    id: 13, node: "1504:360", screenshot: 'screenshots/13-haven-demo.png', type: "module",
+    title: "Haven Demo Page Complexity",
+    desc: "Complex design for the Haven demo page — Hillary says it will be secondary priority",
+    hint: "Good defer candidate — demo page is not launch-critical.",
+    comments: [
+      { who: "Hillary", text: "We can for sure consider simplifying. The demo page will become more secondary in the future, but this can still be put on the list to update." }
+    ]
+  },
+  {
+    id: 14, node: "1504:3072", screenshot: 'screenshots/14-detail-text.png', type: "module",
+    title: "Detail Text Module",
+    desc: "Module with small, dense detail text",
+    hint: "Keep but simplify — Hillary wants larger text and fewer details if it stays.",
+    comments: [
+      { who: "Hillary", text: "Simplify these details and make text larger if we do need it." }
+    ]
+  },
+  {
+    id: 15, node: "1504:2443", screenshot: 'screenshots/15-complexity-question.png', type: "module",
+    title: "Complexity Question Module",
+    desc: "A module whose effect on overall complexity is unclear — needs a judgment call",
+    hint: "Pull up this node in Figma to evaluate before deciding.",
+    comments: [
+      { who: "Megan", text: "Does this simplify or is it adding complexity?" }
+    ]
+  },
+  {
+    id: 16, node: "55:16808", screenshot: 'screenshots/16-secondary-header.png', type: "module",
+    title: "Secondary Header",
+    desc: "A secondary header element — Megan wants it removed and the logo moved",
+    hint: "Clear cut from Megan. If cut: decide where the logo goes instead.",
+    comments: [
+      { who: "Megan", text: "Remove this secondary header, and add the logo on here somewhere." }
+    ]
+  },
+  {
+    id: 17, node: "1499:2640", screenshot: 'screenshots/17-typography.png', type: "module",
+    title: "Typography System (Foundational)",
+    desc: "Currently ~10 type styles in use — needs to be locked at 5 max before other design work continues",
+    hint: "This is foundational. Lock this first before continuing any module work.",
+    comments: [
+      { who: "Megan", text: "Overall can we try and limit the page to a total of 5 font styles? Right now it looks like there's almost 10 or so and it's still feeling too complex." },
+      { who: "Megan", text: "Make sure we're using the Vast fonts — looks like there is a lot of Inter in here which is not a brand font." },
+      { who: "Abram", text: "Christopher and I worked to really cut down on our type styles. We want to be very intentional with pairings — leaning heavily on the large headlines with body copy playing a supporting role." }
+    ]
+  },
+
+  // ── GENERAL RULES (18–22) ──
+  {
+    id: 18, node: null, type: "rule",
+    title: "Deep Dive Interaction Model",
+    desc: "How users go from a high-level overview to technical details — affects multiple modules",
+    hint: "This is a critical decision. Many module designs change depending on which model is chosen.",
+    comments: [
+      { who: "Oscar (Antinomy)", text: "For now we're using the Stripe model — clicking cards expands detailed content in place. I agree the Apple model looks more attractive, but it works as a landing page for a unique product." },
+      { who: "James", text: "One thing that feels like we need to find solutions for is deep dives — going from simple high-level benefit to drilling down into the tech specs and details, like the great Apple products." }
+    ]
+  },
+  {
+    id: 19, node: null, type: "rule",
+    title: "Infographic Style",
+    desc: "How technical information is visualized across the site",
+    hint: "Megan has signaled direction: light, line-drawing style. Old infographic is being removed.",
+    comments: [
+      { who: "Megan", text: "Treat this section as a 'how it's done' infographic — simplify into line drawing references we gave." },
+      { who: "Megan", text: "We're removing this infographic from the site and not re-implementing it — just infographics going forward should be light." }
+    ]
+  },
+  {
+    id: 20, node: null, type: "rule",
+    title: "Card Component System",
+    desc: "How many card variants to define (2-col, 3-col, 4-col) — payload cards are confirmed cut",
+    hint: "Payload cards are already confirmed cut. Decide which column variants to keep.",
+    comments: [
+      { who: "Megan", text: "These particular components with payloads no longer exist on the site and I don't think we need to use them as a reference at all. We need to define the 2-4 column card types and keep them simple." }
+    ]
+  },
+  {
+    id: 21, node: null, type: "rule",
+    title: "Copy Density Rule",
+    desc: "Maximum text length for module descriptions — Christopher flagged 150 chars as the limit",
+    hint: "150-character limit for descriptions is the benchmark. Document as a hard rule.",
+    comments: [
+      { who: "Christopher", text: "Too much copy. This description should be 150 characters or less with optional CTA." },
+      { who: "Christopher", text: "This module has too much copy." },
+      { who: "Megan", text: "If you feel a section has too much copy you're trying to push into an area, please call it out — we're open to cutting copy." }
+    ]
+  },
+  {
+    id: 22, node: null, type: "rule",
+    title: "Simplicity vs. Technical Depth",
+    desc: "How simplified should technical content be? Brand voice: Technical-yet-Human",
+    hint: "Abram is cautioning against over-simplification. This is a guiding principle, not a cut decision.",
+    comments: [
+      { who: "Abram", text: "While I agree it can be dense and perhaps we can look into simplification — I want to make sure we don't accidentally over-simplify things. The website is top-of-funnel but we want to respect our unique balance of Technical-yet-Human presence." }
+    ]
+  }
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const KEY = 'vast-brief-v1';
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+let state = load();          // { [id]: { decision, notes, open } }
+let activeFilter = 'all';
+let activeTab = 'dashboard';
+let dashView = 'list';
+
+// ─────────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────────
+function stats() {
+  let keep = 0, cut = 0, defer = 0, evolve = 0;
+  ITEMS.forEach(i => {
+    const d = state[i.id]?.decision;
+    if (d === 'keep')   keep++;
+    else if (d === 'cut')    cut++;
+    else if (d === 'defer')  defer++;
+    else if (d === 'evolve') evolve++;
+  });
+  return { keep, cut, defer, evolve, total: keep + cut + defer + evolve };
+}
+
+// ─────────────────────────────────────────────
+// GLOBAL REFRESH
+// ─────────────────────────────────────────────
+function refresh() {
+  const s = stats();
+  const pct = Math.round((s.total / 22) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = s.total + ' of 22 decided';
+  document.getElementById('sc-total').textContent = s.total;
+  document.getElementById('sc-keep').textContent = s.keep;
+  document.getElementById('sc-cut').textContent = s.cut;
+  document.getElementById('sc-defer').textContent = s.defer;
+  document.getElementById('sc-evolve').textContent = s.evolve;
+  renderDash();
+  if (activeTab === 'decisions') renderCards();
+  if (activeTab === 'brief') renderBrief();
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+function renderDash() {
+  const el = document.getElementById('dash-list');
+  const labels = { keep: 'Keep', cut: 'Cut', defer: 'Defer', evolve: 'Evolve', undecided: 'Undecided' };
+
+  if (dashView === 'grid') {
+    el.className = 'dash-grid';
+    el.innerHTML = ITEMS.map(item => {
+      const d = state[item.id]?.decision || 'undecided';
+      return `
+        <div class="grid-card d-${d}" onclick="jumpTo(${item.id})">
+          <div class="grid-card-top">
+            <span class="grid-num">#${item.id}</span>
+            <span class="badge d-${d}">${labels[d]}</span>
+          </div>
+          <div class="grid-title">${item.title}</div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    el.className = 'dash-list';
+    el.innerHTML = ITEMS.map(item => {
+      const d = state[item.id]?.decision || 'undecided';
+      return `
+        <div class="dash-row d-${d}" onclick="jumpTo(${item.id})">
+          <span class="badge d-${d}">${labels[d]}</span>
+          <span class="dash-name">${item.title}</span>
+          <span class="dash-num">#${item.id}</span>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function setDashView(view) {
+  dashView = view;
+  document.getElementById('vt-list').classList.toggle('active', view === 'list');
+  document.getElementById('vt-grid').classList.toggle('active', view === 'grid');
+  renderDash();
+}
+
+// ─────────────────────────────────────────────
+// DECISIONS
+// ─────────────────────────────────────────────
+function renderCards() {
+  const el = document.getElementById('cards-list');
+  const modules = ITEMS.filter(i => i.type === 'module');
+  const rules   = ITEMS.filter(i => i.type === 'rule');
+
+  function section(items, label) {
+    const visible = items.filter(i => {
+      if (activeFilter === 'all') return true;
+      const d = state[i.id]?.decision || 'undecided';
+      return d === activeFilter;
+    });
+    if (!visible.length) return '';
+    return `<div class="section-divider">${label}</div>` + visible.map(card).join('');
+  }
+
+  const html = section(modules, 'Specific Modules — Items 1–17') +
+               section(rules,   'General Rules — Items 18–22');
+
+  el.innerHTML = html || `<div class="empty">No items match this filter.</div>`;
+}
+
+function card(item) {
+  const d     = state[item.id]?.decision || 'undecided';
+  const notes = state[item.id]?.notes || '';
+  const open  = state[item.id]?.open  || false;
+
+  const comments = item.comments.map(c => `
+    <div class="comment">
+      <div class="comment-who">${c.who}</div>
+      <div class="comment-text">"${c.text}"</div>
+    </div>
+  `).join('');
+
+  const nodeTag = item.node
+    ? `<span class="node-tag">node ${item.node}</span>`
+    : '';
+
+  return `
+    <div class="card d-${d} ${open ? 'open' : ''}" id="card-${item.id}">
+      <div class="card-top" onclick="toggleCard(${item.id})">
+        <div class="card-num">#${item.id}</div>
+        <div class="card-info">
+          <div class="card-title">${item.title}</div>
+          <div class="card-desc">${item.desc}</div>
+          ${nodeTag}
+        </div>
+        <div class="card-chevron">▶</div>
+      </div>
+      <div class="card-body">
+        ${item.screenshot ? `
+          <div class="card-screenshot" onclick="this.classList.toggle('expanded')" title="Click to expand / collapse">
+            <img src="${item.screenshot}" alt="${item.title}" loading="lazy">
+            <div class="screenshot-label">Figma screenshot — click to expand</div>
+          </div>` : ''}
+        ${item.hint ? `<div class="hint-box">💡 ${item.hint}</div>` : ''}
+        <div class="comments-list">${comments}</div>
+        <div class="dec-row">
+          <button class="dec-btn ${d==='keep'?'sel-keep':''}"   onclick="decide(${item.id},'keep')">✓ Keep</button>
+          <button class="dec-btn ${d==='cut'?'sel-cut':''}"    onclick="decide(${item.id},'cut')">✕ Cut</button>
+          <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${item.id},'defer')">→ Defer</button>
+          <button class="dec-btn ${d==='evolve'?'sel-evolve':''}" onclick="decide(${item.id},'evolve')">↻ Evolve</button>
+        </div>
+        <div class="notes-label">Notes / Refinements</div>
+        <textarea class="notes-input"
+          placeholder="Add context, conditions, or what to keep/remove..."
+          oninput="setNotes(${item.id}, this.value)">${notes}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+// BRIEF
+// ─────────────────────────────────────────────
+function renderBrief() {
+  const el = document.getElementById('brief-box');
+  const s = stats();
+
+  if (s.total === 0) {
+    el.innerHTML = '<span class="brief-placeholder">Make decisions in the Decisions tab — the brief will auto-generate here as you go.\n\nYou can copy this text and paste it directly into an email or document to send to Antinomy.</span>';
+    return;
+  }
+
+  const keeps    = ITEMS.filter(i => state[i.id]?.decision === 'keep');
+  const cuts     = ITEMS.filter(i => state[i.id]?.decision === 'cut');
+  const defers   = ITEMS.filter(i => state[i.id]?.decision === 'defer');
+  const evolves  = ITEMS.filter(i => state[i.id]?.decision === 'evolve');
+  const undecided = ITEMS.filter(i => !state[i.id]?.decision);
+
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const line  = '─'.repeat(52);
+
+  const cutEst = cuts.length > 0
+    ? ` (~${Math.round((cuts.length / 22) * 25)}–${Math.round((cuts.length / 22) * 35)}% scope reduction)`
+    : '';
+
+  let t = '';
+  t += `ANTINOMY BRIEF — VAST 2026 WEBSITE REFRESH\n`;
+  t += `${line}\n`;
+  t += `Date: ${today}\n`;
+  t += `Prepared by: Vast Internal Team\n`;
+  t += `Status: Re-engaging Antinomy after internal alignment\n\n`;
+
+  t += `DECISION SUMMARY\n`;
+  t += `${line}\n`;
+  t += `  Keep     ${s.keep} items\n`;
+  t += `  Evolve   ${evolves.length} items (keep, but needs iteration)\n`;
+  t += `  Cut      ${cuts.length} items${cutEst}\n`;
+  t += `  Defer    ${defers.length} items (post-launch)\n`;
+  if (undecided.length > 0) {
+  t += `  TBD      ${undecided.length} items still need a decision\n`;
+  }
+  t += `\n`;
+
+  if (keeps.length > 0) {
+    t += `${line}\n`;
+    t += `KEEP — Modules & Rules to Refine\n`;
+    t += `${line}\n\n`;
+    keeps.forEach(item => {
+      t += `• ${item.title}`;
+      if (item.node) t += ` [node ${item.node}]`;
+      t += `\n`;
+      const notes = state[item.id]?.notes?.trim();
+      if (notes) t += `  Notes: ${notes}\n`;
+      t += `\n`;
+    });
+  }
+
+  if (evolves.length > 0) {
+    t += `${line}\n`;
+    t += `EVOLVE — Keep, but Needs Iteration\n`;
+    t += `${line}\n\n`;
+    evolves.forEach(item => {
+      t += `• ${item.title}`;
+      if (item.node) t += ` [node ${item.node}]`;
+      t += `\n`;
+      const notes = state[item.id]?.notes?.trim();
+      if (notes) t += `  Direction: ${notes}\n`;
+      t += `\n`;
+    });
+  }
+
+  if (cuts.length > 0) {
+    t += `${line}\n`;
+    t += `CUT — Remove from Scope Entirely\n`;
+    t += `${line}\n\n`;
+    cuts.forEach(item => {
+      t += `• ${item.title}`;
+      if (item.node) t += ` [node ${item.node}]`;
+      t += `\n`;
+      const notes = state[item.id]?.notes?.trim();
+      if (notes) t += `  Reason: ${notes}\n`;
+      t += `\n`;
+    });
+  }
+
+  if (defers.length > 0) {
+    t += `${line}\n`;
+    t += `DEFER — Post-Launch Enhancements\n`;
+    t += `${line}\n\n`;
+    defers.forEach(item => {
+      t += `• ${item.title}`;
+      if (item.node) t += ` [node ${item.node}]`;
+      t += `\n`;
+      const notes = state[item.id]?.notes?.trim();
+      if (notes) t += `  Notes: ${notes}\n`;
+      t += `\n`;
+    });
+  }
+
+  // Gather any rules that were decided
+  const ruleLines = [];
+
+  const typo = state[17];
+  if (typo?.decision) {
+    ruleLines.push(`Typography`);
+    ruleLines.push(`  • 5 font styles maximum (currently ~10)`);
+    ruleLines.push(`  • Brand fonts only: Owner's, Phonic — no Inter`);
+    ruleLines.push(`  • Pattern: Large headline + body copy in supporting role`);
+    if (typo.notes?.trim()) ruleLines.push(`  • ${typo.notes.trim()}`);
+    ruleLines.push('');
+  }
+
+  const copy = state[21];
+  if (copy?.decision) {
+    ruleLines.push(`Copy Density`);
+    ruleLines.push(`  • Descriptions: 150 characters max`);
+    ruleLines.push(`  • Headline rule: Long headline only OR Short headline + paragraph — never both`);
+    if (copy.notes?.trim()) ruleLines.push(`  • ${copy.notes.trim()}`);
+    ruleLines.push('');
+  }
+
+  const deepDive = state[18];
+  if (deepDive?.decision) {
+    ruleLines.push(`Deep Dive Interaction Model`);
+    if (deepDive.notes?.trim()) {
+      ruleLines.push(`  • ${deepDive.notes.trim()}`);
+    } else {
+      ruleLines.push(`  • Decision: [add your choice — Stripe model, Apple model, or Hybrid]`);
+    }
+    ruleLines.push('');
+  }
+
+  const cards = state[20];
+  if (cards?.decision) {
+    ruleLines.push(`Card Component System`);
+    ruleLines.push(`  • Remove: Payload card components (confirmed obsolete)`);
+    if (cards.notes?.trim()) ruleLines.push(`  • ${cards.notes.trim()}`);
+    ruleLines.push('');
+  }
+
+  const infographic = state[19];
+  if (infographic?.decision) {
+    ruleLines.push(`Infographic Style`);
+    ruleLines.push(`  • Light, line-drawing style infographics only`);
+    ruleLines.push(`  • Old heavy infographic style is being removed from site`);
+    if (infographic.notes?.trim()) ruleLines.push(`  • ${infographic.notes.trim()}`);
+    ruleLines.push('');
+  }
+
+  const depth = state[22];
+  if (depth?.decision) {
+    ruleLines.push(`Design Principle: Technical-yet-Human`);
+    ruleLines.push(`  • Simplify where possible — but do not over-simplify`);
+    ruleLines.push(`  • The site is top-of-funnel but must maintain technical credibility`);
+    if (depth.notes?.trim()) ruleLines.push(`  • ${depth.notes.trim()}`);
+    ruleLines.push('');
+  }
+
+  if (ruleLines.length > 0) {
+    t += `${line}\n`;
+    t += `NEW RULES FOR ANTINOMY TO FOLLOW\n`;
+    t += `${line}\n\n`;
+    t += ruleLines.join('\n') + '\n';
+  }
+
+  if (undecided.length > 0) {
+    t += `${line}\n`;
+    t += `STILL NEEDS DECISION (${undecided.length} items)\n`;
+    t += `${line}\n\n`;
+    undecided.forEach(item => {
+      t += `• ${item.title}\n`;
+    });
+    t += `\n`;
+  }
+
+  t += `${line}\n`;
+  t += `NEXT STEPS\n`;
+  t += `${line}\n\n`;
+  t += `1. Antinomy to acknowledge this brief and confirm they can proceed\n`;
+  t += `2. Unblock the "paused until further alignment" status (paused May 26, 2026)\n`;
+  t += `3. Lock foundational systems first: typography → color → spacing → components\n`;
+  t += `4. Get updated timeline and estimate based on reduced scope\n`;
+  t += `5. Max 2 design rounds per module — then decide or cut\n\n`;
+  t += `${line}\n`;
+  t += `Figma File: Dhpi5a7jp2NUKId3J3YvNq  (2026 Website Refresh)\n`;
+
+  el.textContent = t;
+}
+
+// ─────────────────────────────────────────────
+// ACTIONS
+// ─────────────────────────────────────────────
+function switchTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'decisions') renderCards();
+  if (tab === 'brief')     renderBrief();
+}
+
+function setFilter(filter, btn) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  if (!card) return;
+  const nowOpen = card.classList.toggle('open');
+  if (!state[id]) state[id] = {};
+  state[id].open = nowOpen;
+  save();
+}
+
+function decide(id, decision) {
+  if (!state[id]) state[id] = {};
+  // Toggle off if tapping the same button again
+  state[id].decision = (state[id].decision === decision) ? null : decision;
+  state[id].open = true;
+  save();
+  refresh();
+  // After re-render, re-open the card so they stay in context
+  setTimeout(() => {
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.classList.add('open');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 10);
+}
+
+function setNotes(id, value) {
+  if (!state[id]) state[id] = {};
+  state[id].notes = value;
+  save();
+  if (activeTab === 'brief') renderBrief();
+}
+
+function jumpTo(id) {
+  // Switch to decisions, show all, open that card
+  activeTab = 'decisions';
+  activeFilter = 'all';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-decisions').classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.filter-btn').classList.add('active');
+  renderCards();
+  setTimeout(() => {
+    if (!state[id]) state[id] = {};
+    state[id].open = true;
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.classList.add('open');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 20);
+}
+
+function copyBrief() {
+  const text = document.getElementById('brief-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy to Clipboard';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+refresh();
+</script>
+</body>
+</html>
