@@ -668,6 +668,7 @@ body {
   text-transform: uppercase;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -707,7 +708,7 @@ body {
       </div>
       <div class="score-box s-keep">
         <div class="score-num" id="sc-keep">0</div>
-        <div class="score-label">Keep</div>
+        <div class="score-label">Keep / Evolve</div>
       </div>
       <div class="score-box s-cut">
         <div class="score-num" id="sc-cut">0</div>
@@ -722,7 +723,7 @@ body {
     <div class="key">
       <div class="key-item">
         <span class="key-dot" style="background:var(--keep)"></span>
-        <span><strong>Keep</strong> — launch-critical, stays in scope</span>
+        <span><strong>Keep / Evolve</strong> — stays in scope, with or without iteration</span>
       </div>
       <div class="key-item">
         <span class="key-dot" style="background:var(--cut)"></span>
@@ -757,7 +758,7 @@ body {
     <div class="filter-bar" id="filter-bar">
       <button class="filter-btn active" onclick="setFilter('all', this)">All (22)</button>
       <button class="filter-btn" onclick="setFilter('undecided', this)">Undecided</button>
-      <button class="filter-btn" onclick="setFilter('keep', this)">Keep</button>
+      <button class="filter-btn" onclick="setFilter('keep', this)">Keep / Evolve</button>
       <button class="filter-btn" onclick="setFilter('cut', this)">Cut</button>
       <button class="filter-btn" onclick="setFilter('defer', this)">Defer</button>
     </div>
@@ -1045,7 +1046,7 @@ function refresh() {
 // ─────────────────────────────────────────────
 function renderDash() {
   const el = document.getElementById('dash-list');
-  const labels = { keep: 'Keep', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
+  const labels = { keep: 'Keep / Evolve', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
 
   if (dashView === 'grid') {
     el.className = 'dash-grid';
@@ -1143,7 +1144,7 @@ function card(item) {
         ${item.hint ? `<div class="hint-box">💡 ${item.hint}</div>` : ''}
         <div class="comments-list">${comments}</div>
         <div class="dec-row">
-          <button class="dec-btn ${d==='keep'?'sel-keep':''}"   onclick="decide(${item.id},'keep')">✓ Keep</button>
+          <button class="dec-btn ${d==='keep'?'sel-keep':''}"   onclick="decide(${item.id},'keep')">✓ Keep / Evolve</button>
           <button class="dec-btn ${d==='cut'?'sel-cut':''}"    onclick="decide(${item.id},'cut')">✕ Cut</button>
           <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${item.id},'defer')">→ Defer</button>
         </div>
@@ -1189,7 +1190,7 @@ function renderBrief() {
 
   t += `DECISION SUMMARY\n`;
   t += `${line}\n`;
-  t += `  Keep     ${s.keep} items\n`;
+  t += `  Keep / Evolve  ${s.keep} items\n`;
   t += `  Cut      ${cuts.length} items${cutEst}\n`;
   t += `  Defer    ${defers.length} items (post-launch)\n`;
   if (undecided.length > 0) {
@@ -1199,7 +1200,7 @@ function renderBrief() {
 
   if (keeps.length > 0) {
     t += `${line}\n`;
-    t += `KEEP — Modules & Rules to Refine\n`;
+    t += `KEEP / EVOLVE — Modules & Rules in Scope\n`;
     t += `${line}\n\n`;
     keeps.forEach(item => {
       t += `• ${item.title}`;
@@ -1424,12 +1425,19 @@ function copyBrief() {
 function exportNotes() {
   const name = prompt('Your name (so the other person knows whose notes these are):', 'Megan');
   if (!name) return;
+  const date = new Date().toISOString().slice(0, 10);
+  const slug = name.toLowerCase().replace(/\s+/g, '-');
+  const filename = `vast-website-ds-brief-notes-${slug}-${date}`;
   const payload = { author: name, exported: new Date().toISOString(), state };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `vast-brief-notes-${name.toLowerCase().replace(/\s+/g,'-')}.json`;
-  a.click();
+  const json = JSON.stringify(payload, null, 2);
+  const zip = new JSZip();
+  zip.file(`${filename}.json`, json);
+  zip.generateAsync({ type: 'blob' }).then(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${filename}.zip`;
+    a.click();
+  });
 }
 
 function importNotes(input) {
