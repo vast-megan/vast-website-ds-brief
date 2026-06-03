@@ -142,7 +142,7 @@ body {
 /* ── Dashboard ── */
 .scorecard {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-bottom: 32px;
 }
@@ -602,6 +602,30 @@ body {
   flex-shrink: 0;
 }
 
+/* ── Sync buttons ── */
+.sync-btns {
+  display: flex;
+  gap: 2px;
+  margin-right: 6px;
+}
+
+.sync-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.sync-btn:hover { color: var(--text); border-color: var(--text); }
+
 /* ── Empty state ── */
 .empty {
   text-align: center;
@@ -660,6 +684,10 @@ body {
   </div>
 
   <div class="header-right">
+    <div class="sync-btns">
+      <button class="sync-btn" onclick="exportNotes()" title="Download your notes as a file to share">↓ Export</button>
+      <label class="sync-btn" title="Load notes from a file someone shared with you">↑ Import<input type="file" accept=".json" style="display:none" onchange="importNotes(this)"></label>
+    </div>
     <div class="progress-text" id="prog-text">0 of 22 decided</div>
     <div class="progress-bar-wrap">
       <div class="progress-fill" id="prog-fill" style="width:0%"></div>
@@ -689,10 +717,6 @@ body {
         <div class="score-num" id="sc-defer">0</div>
         <div class="score-label">Defer</div>
       </div>
-      <div class="score-box s-evolve">
-        <div class="score-num" id="sc-evolve">0</div>
-        <div class="score-label">Evolve</div>
-      </div>
     </div>
 
     <div class="key">
@@ -707,10 +731,6 @@ body {
       <div class="key-item">
         <span class="key-dot" style="background:var(--defer)"></span>
         <span><strong>Defer</strong> — good idea, revisit after launch</span>
-      </div>
-      <div class="key-item">
-        <span class="key-dot" style="background:var(--evolve)"></span>
-        <span><strong>Evolve</strong> — keep it, but it needs iteration before it's ready</span>
       </div>
       <div class="key-item">
         <span class="key-dot" style="background:var(--border)"></span>
@@ -740,7 +760,6 @@ body {
       <button class="filter-btn" onclick="setFilter('keep', this)">Keep</button>
       <button class="filter-btn" onclick="setFilter('cut', this)">Cut</button>
       <button class="filter-btn" onclick="setFilter('defer', this)">Defer</button>
-      <button class="filter-btn" onclick="setFilter('evolve', this)">Evolve</button>
     </div>
     <div class="cards-list" id="cards-list"></div>
   </div>
@@ -994,15 +1013,14 @@ let dashView = 'list';
 // STATS
 // ─────────────────────────────────────────────
 function stats() {
-  let keep = 0, cut = 0, defer = 0, evolve = 0;
+  let keep = 0, cut = 0, defer = 0;
   ITEMS.forEach(i => {
     const d = state[i.id]?.decision;
-    if (d === 'keep')   keep++;
-    else if (d === 'cut')    cut++;
-    else if (d === 'defer')  defer++;
-    else if (d === 'evolve') evolve++;
+    if (d === 'keep')  keep++;
+    else if (d === 'cut')   cut++;
+    else if (d === 'defer') defer++;
   });
-  return { keep, cut, defer, evolve, total: keep + cut + defer + evolve };
+  return { keep, cut, defer, total: keep + cut + defer };
 }
 
 // ─────────────────────────────────────────────
@@ -1017,7 +1035,6 @@ function refresh() {
   document.getElementById('sc-keep').textContent = s.keep;
   document.getElementById('sc-cut').textContent = s.cut;
   document.getElementById('sc-defer').textContent = s.defer;
-  document.getElementById('sc-evolve').textContent = s.evolve;
   renderDash();
   if (activeTab === 'decisions') renderCards();
   if (activeTab === 'brief') renderBrief();
@@ -1028,7 +1045,7 @@ function refresh() {
 // ─────────────────────────────────────────────
 function renderDash() {
   const el = document.getElementById('dash-list');
-  const labels = { keep: 'Keep', cut: 'Cut', defer: 'Defer', evolve: 'Evolve', undecided: 'Undecided' };
+  const labels = { keep: 'Keep', cut: 'Cut', defer: 'Defer', undecided: 'Undecided' };
 
   if (dashView === 'grid') {
     el.className = 'dash-grid';
@@ -1129,7 +1146,6 @@ function card(item) {
           <button class="dec-btn ${d==='keep'?'sel-keep':''}"   onclick="decide(${item.id},'keep')">✓ Keep</button>
           <button class="dec-btn ${d==='cut'?'sel-cut':''}"    onclick="decide(${item.id},'cut')">✕ Cut</button>
           <button class="dec-btn ${d==='defer'?'sel-defer':''}" onclick="decide(${item.id},'defer')">→ Defer</button>
-          <button class="dec-btn ${d==='evolve'?'sel-evolve':''}" onclick="decide(${item.id},'evolve')">↻ Evolve</button>
         </div>
         <div class="notes-label">Notes / Refinements</div>
         <textarea class="notes-input"
@@ -1155,7 +1171,6 @@ function renderBrief() {
   const keeps    = ITEMS.filter(i => state[i.id]?.decision === 'keep');
   const cuts     = ITEMS.filter(i => state[i.id]?.decision === 'cut');
   const defers   = ITEMS.filter(i => state[i.id]?.decision === 'defer');
-  const evolves  = ITEMS.filter(i => state[i.id]?.decision === 'evolve');
   const undecided = ITEMS.filter(i => !state[i.id]?.decision);
 
   const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
@@ -1175,7 +1190,6 @@ function renderBrief() {
   t += `DECISION SUMMARY\n`;
   t += `${line}\n`;
   t += `  Keep     ${s.keep} items\n`;
-  t += `  Evolve   ${evolves.length} items (keep, but needs iteration)\n`;
   t += `  Cut      ${cuts.length} items${cutEst}\n`;
   t += `  Defer    ${defers.length} items (post-launch)\n`;
   if (undecided.length > 0) {
@@ -1197,19 +1211,6 @@ function renderBrief() {
     });
   }
 
-  if (evolves.length > 0) {
-    t += `${line}\n`;
-    t += `EVOLVE — Keep, but Needs Iteration\n`;
-    t += `${line}\n\n`;
-    evolves.forEach(item => {
-      t += `• ${item.title}`;
-      if (item.node) t += ` [node ${item.node}]`;
-      t += `\n`;
-      const notes = state[item.id]?.notes?.trim();
-      if (notes) t += `  Direction: ${notes}\n`;
-      t += `\n`;
-    });
-  }
 
   if (cuts.length > 0) {
     t += `${line}\n`;
@@ -1415,6 +1416,51 @@ function copyBrief() {
       btn.classList.remove('copied');
     }, 2000);
   });
+}
+
+// ─────────────────────────────────────────────
+// EXPORT / IMPORT
+// ─────────────────────────────────────────────
+function exportNotes() {
+  const name = prompt('Your name (so the other person knows whose notes these are):', 'Megan');
+  if (!name) return;
+  const payload = { author: name, exported: new Date().toISOString(), state };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vast-brief-notes-${name.toLowerCase().replace(/\s+/g,'-')}.json`;
+  a.click();
+}
+
+function importNotes(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.state) throw new Error('Invalid file');
+      const author = payload.author || 'Someone';
+      const count = Object.keys(payload.state).length;
+      if (!confirm(`Import ${count} notes from ${author}?\n\nTheir decisions and notes will be merged into yours. If you both left notes on the same item, both are kept.`)) return;
+      Object.entries(payload.state).forEach(([id, data]) => {
+        if (!state[id]) state[id] = {};
+        if (!state[id].decision && data.decision) state[id].decision = data.decision;
+        if (data.notes && !state[id].notes) state[id].notes = data.notes;
+        else if (data.notes && state[id].notes && data.notes !== state[id].notes) {
+          state[id].notes = state[id].notes + '\n\n' + author + ': ' + data.notes;
+        }
+      });
+      save();
+      refresh();
+      if (activeTab === 'decisions') renderCards();
+      alert(`Imported notes from ${author}.`);
+    } catch {
+      alert('Could not read that file — make sure it\'s a notes file exported from this tool.');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 // ─────────────────────────────────────────────
