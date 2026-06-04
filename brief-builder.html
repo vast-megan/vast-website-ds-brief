@@ -868,7 +868,7 @@ body {
 .comp-deferred { background: var(--defer-dim); color: var(--defer); }
 
 /* ── Custom item ── */
-.comp-card.custom-item { border-left: 3px solid var(--orange) !important; }
+.comp-card.custom-item { }
 .custom-label { font-family: var(--mono); font-size: 9px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.1em; }
 
 /* ── Add item button ── */
@@ -999,7 +999,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   display: flex; flex-direction: column; min-height: 110px;
 }
 .comp-grid-tile:hover { background: var(--bg); }
-.comp-grid-tile.custom-item { border-left: 3px solid var(--orange); }
+.comp-grid-tile.custom-item { }
 .comp-grid-tile-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .comp-grid-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; margin-bottom: 4px; }
 .comp-grid-desc { font-size: 11px; color: var(--muted); line-height: 1.45; margin-bottom: 6px; }
@@ -1686,22 +1686,17 @@ function renderBrief() {
   const el = document.getElementById('brief-box');
   const s = stats();
 
-  if (s.total === 0) {
-    el.innerHTML = '<span class="brief-placeholder">Make decisions in the Decisions tab — the brief will auto-generate here as you go.\n\nYou can copy this text and paste it directly into an email or document to send to Antinomy.</span>';
+  const hasOrgData = Object.keys(compState.organisms || {}).length > 0;
+  const hasCustomOrgs = (compState.custom?.organisms || []).some(c => c.status !== 'todo');
+
+  if (s.total === 0 && !hasOrgData && !hasCustomOrgs) {
+    el.removeAttribute('contenteditable');
+    el.innerHTML = '<span class="brief-placeholder">Fill in the Components tab — the brief will auto-generate here as you go.\n\nOnce generated, you can click anywhere in the text to edit it before copying.</span>';
     return;
   }
 
-  const keeps    = ITEMS.filter(i => state[i.id]?.decision === 'keep');
-  const cuts     = ITEMS.filter(i => state[i.id]?.decision === 'cut');
-  const defers   = ITEMS.filter(i => state[i.id]?.decision === 'defer');
-  const undecided = ITEMS.filter(i => !state[i.id]?.decision);
-
   const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   const line  = '─'.repeat(52);
-
-  const cutEst = cuts.length > 0
-    ? ` (~${Math.round((cuts.length / 22) * 25)}–${Math.round((cuts.length / 22) * 35)}% scope reduction)`
-    : '';
 
   let t = '';
   t += `ANTINOMY BRIEF — VAST 2026 WEBSITE REFRESH\n`;
@@ -1710,135 +1705,119 @@ function renderBrief() {
   t += `Prepared by: Vast Internal Team\n`;
   t += `Status: Re-engaging Antinomy after internal alignment\n\n`;
 
-  t += `DECISION SUMMARY\n`;
-  t += `${line}\n`;
-  t += `  Keep / Evolve  ${s.keep} items\n`;
-  t += `  Cut      ${cuts.length} items${cutEst}\n`;
-  t += `  Deferred ${defers.length} items (post-launch)\n`;
-  if (undecided.length > 0) {
-  t += `  TBD      ${undecided.length} items still need a decision\n`;
-  }
-  t += `\n`;
-
-  if (keeps.length > 0) {
-    t += `${line}\n`;
-    t += `KEEP / EVOLVE — Modules & Rules in Scope\n`;
-    t += `${line}\n\n`;
-    keeps.forEach(item => {
-      t += `• ${item.title}`;
-      if (item.node) t += ` [node ${item.node}]`;
-      t += `\n`;
-      const notes = state[item.id]?.notes?.trim();
-      if (notes) t += `  Notes: ${notes}\n`;
-      t += `\n`;
-    });
-  }
-
-
-  if (cuts.length > 0) {
-    t += `${line}\n`;
-    t += `CUT — Remove from Scope Entirely\n`;
-    t += `${line}\n\n`;
-    cuts.forEach(item => {
-      t += `• ${item.title}`;
-      if (item.node) t += ` [node ${item.node}]`;
-      t += `\n`;
-      const notes = state[item.id]?.notes?.trim();
-      if (notes) t += `  Reason: ${notes}\n`;
-      t += `\n`;
-    });
-  }
-
-  if (defers.length > 0) {
-    t += `${line}\n`;
-    t += `DEFER — Post-Launch Enhancements\n`;
-    t += `${line}\n\n`;
-    defers.forEach(item => {
-      t += `• ${item.title}`;
-      if (item.node) t += ` [node ${item.node}]`;
-      t += `\n`;
-      const notes = state[item.id]?.notes?.trim();
-      if (notes) t += `  Notes: ${notes}\n`;
-      t += `\n`;
-    });
-  }
-
-  // Gather any rules that were decided
-  const ruleLines = [];
-
-  const typo = state[17];
-  if (typo?.decision) {
-    ruleLines.push(`Typography`);
-    ruleLines.push(`  • 5 font styles maximum (currently ~10)`);
-    ruleLines.push(`  • Brand fonts only: Owner's, Phonic — no Inter`);
-    ruleLines.push(`  • Pattern: Large headline + body copy in supporting role`);
-    if (typo.notes?.trim()) ruleLines.push(`  • ${typo.notes.trim()}`);
-    ruleLines.push('');
-  }
-
-  const copy = state[21];
-  if (copy?.decision) {
-    ruleLines.push(`Copy Density`);
-    ruleLines.push(`  • Descriptions: 150 characters max`);
-    ruleLines.push(`  • Headline rule: Long headline only OR Short headline + paragraph — never both`);
-    if (copy.notes?.trim()) ruleLines.push(`  • ${copy.notes.trim()}`);
-    ruleLines.push('');
-  }
-
-  const deepDive = state[18];
-  if (deepDive?.decision) {
-    ruleLines.push(`Deep Dive Interaction Model`);
-    if (deepDive.notes?.trim()) {
-      ruleLines.push(`  • ${deepDive.notes.trim()}`);
-    } else {
-      ruleLines.push(`  • Decision: [add your choice — Stripe model, Apple model, or Hybrid]`);
+  // ── ORGANISMS ──
+  function writeOrg(name, notes, variants) {
+    let block = `• ${name}\n`;
+    if (notes?.trim()) block += `  Notes: ${notes.trim()}\n`;
+    const filled = (variants || []).filter(v => v.name?.trim());
+    if (filled.length > 0) {
+      block += `  Variants:\n`;
+      filled.forEach((v, i) => {
+        block += `    ${i + 1}. ${v.name}`;
+        if (v.notes?.trim()) block += ` — ${v.notes.trim()}`;
+        block += `\n`;
+      });
     }
-    ruleLines.push('');
+    return block + '\n';
   }
 
-  const cards = state[20];
-  if (cards?.decision) {
-    ruleLines.push(`Card Component System`);
-    ruleLines.push(`  • Remove: Payload card components (confirmed obsolete)`);
-    if (cards.notes?.trim()) ruleLines.push(`  • ${cards.notes.trim()}`);
-    ruleLines.push('');
-  }
-
-  const infographic = state[19];
-  if (infographic?.decision) {
-    ruleLines.push(`Infographic Style`);
-    ruleLines.push(`  • Light, line-drawing style infographics only`);
-    ruleLines.push(`  • Old heavy infographic style is being removed from site`);
-    if (infographic.notes?.trim()) ruleLines.push(`  • ${infographic.notes.trim()}`);
-    ruleLines.push('');
-  }
-
-  const depth = state[22];
-  if (depth?.decision) {
-    ruleLines.push(`Design Principle: Technical-yet-Human`);
-    ruleLines.push(`  • Simplify where possible — but do not over-simplify`);
-    ruleLines.push(`  • The site is top-of-funnel but must maintain technical credibility`);
-    if (depth.notes?.trim()) ruleLines.push(`  • ${depth.notes.trim()}`);
-    ruleLines.push('');
-  }
-
-  if (ruleLines.length > 0) {
-    t += `${line}\n`;
-    t += `NEW RULES FOR ANTINOMY TO FOLLOW\n`;
-    t += `${line}\n\n`;
-    t += ruleLines.join('\n') + '\n';
-  }
-
-  if (undecided.length > 0) {
-    t += `${line}\n`;
-    t += `STILL NEEDS DECISION (${undecided.length} items)\n`;
-    t += `${line}\n\n`;
-    undecided.forEach(item => {
-      t += `• ${item.title}\n`;
+  const readyOrgs = [], progressOrgs = [], deferredOrgs = [];
+  if (typeof ORGANISMS_DATA !== 'undefined') {
+    ORGANISMS_DATA.forEach(def => {
+      const d = compState.organisms?.[def.id];
+      if (!d) return;
+      const entry = { name: def.name, notes: d.notes, variants: d.variants };
+      if (d.status === 'done') readyOrgs.push(entry);
+      else if (d.status === 'progress') progressOrgs.push(entry);
+      else if (d.status === 'deferred') deferredOrgs.push(entry);
     });
-    t += `\n`;
+  }
+  const customAll = compState.custom?.organisms || [];
+  const customReady    = customAll.filter(c => c.status === 'done');
+  const customProgress = customAll.filter(c => c.status === 'progress');
+  const customDeferred = customAll.filter(c => c.status === 'deferred');
+
+  const totalReady = readyOrgs.length + customReady.length;
+  const totalDeferred = deferredOrgs.length + customDeferred.length;
+
+  if (totalReady > 0) {
+    t += `${line}\n`;
+    t += `ORGANISMS — READY (${totalReady})\n`;
+    t += `${line}\n\n`;
+    readyOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
+    customReady.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
   }
 
+  if (progressOrgs.length + customProgress.length > 0) {
+    t += `${line}\n`;
+    t += `ORGANISMS — IN PROGRESS\n`;
+    t += `${line}\n\n`;
+    progressOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
+    customProgress.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
+  }
+
+  if (totalDeferred > 0) {
+    t += `${line}\n`;
+    t += `ORGANISMS — DEFERRED\n`;
+    t += `${line}\n\n`;
+    [...deferredOrgs, ...customDeferred].forEach(o => {
+      t += `• ${o.name}\n`;
+      if (o.notes?.trim()) t += `  Notes: ${o.notes.trim()}\n`;
+      t += `\n`;
+    });
+  }
+
+  // ── AUDIT DECISIONS (if any made) ──
+  if (s.total > 0) {
+    const keeps    = ITEMS.filter(i => state[i.id]?.decision === 'keep');
+    const cuts     = ITEMS.filter(i => state[i.id]?.decision === 'cut');
+    const defers   = ITEMS.filter(i => state[i.id]?.decision === 'defer');
+    const undecided = ITEMS.filter(i => !state[i.id]?.decision);
+    const cutEst = cuts.length > 0
+      ? ` (~${Math.round((cuts.length / 22) * 25)}–${Math.round((cuts.length / 22) * 35)}% scope reduction)`
+      : '';
+
+    t += `${line}\n`;
+    t += `AUDIT DECISIONS\n`;
+    t += `${line}\n`;
+    t += `  Keep / Evolve  ${s.keep} items\n`;
+    t += `  Cut      ${cuts.length} items${cutEst}\n`;
+    t += `  Deferred ${defers.length} items (post-launch)\n`;
+    if (undecided.length > 0) t += `  TBD      ${undecided.length} items still need a decision\n`;
+    t += `\n`;
+
+    if (keeps.length > 0) {
+      t += `Keep / Evolve:\n`;
+      keeps.forEach(item => {
+        t += `• ${item.title}`;
+        if (item.node) t += ` [node ${item.node}]`;
+        t += `\n`;
+        const notes = state[item.id]?.notes?.trim();
+        if (notes) t += `  Notes: ${notes}\n`;
+        t += `\n`;
+      });
+    }
+    if (cuts.length > 0) {
+      t += `Cut:\n`;
+      cuts.forEach(item => {
+        t += `• ${item.title}\n`;
+        const notes = state[item.id]?.notes?.trim();
+        if (notes) t += `  Reason: ${notes}\n`;
+        t += `\n`;
+      });
+    }
+    if (defers.length > 0) {
+      t += `Deferred:\n`;
+      defers.forEach(item => {
+        t += `• ${item.title}\n`;
+        const notes = state[item.id]?.notes?.trim();
+        if (notes) t += `  Notes: ${notes}\n`;
+        t += `\n`;
+      });
+    }
+  }
+
+  // ── NEXT STEPS ──
   t += `${line}\n`;
   t += `NEXT STEPS\n`;
   t += `${line}\n\n`;
@@ -1851,6 +1830,9 @@ function renderBrief() {
   t += `Figma File: Dhpi5a7jp2NUKId3J3YvNq  (2026 Website Refresh)\n`;
 
   el.textContent = t;
+  el.setAttribute('contenteditable', 'true');
+  el.style.outline = 'none';
+  el.style.cursor = 'text';
 }
 
 // ─────────────────────────────────────────────
@@ -1984,7 +1966,7 @@ function exportNotes() {
   const date = new Date().toISOString().slice(0, 10);
   const slug = name.toLowerCase().replace(/\s+/g, '-');
   const filename = `vast-website-ds-brief-notes-${slug}-${date}`;
-  const payload = { author: name, exported: new Date().toISOString(), state };
+  const payload = { author: name, exported: new Date().toISOString(), state, compState, blockerState };
   const json = JSON.stringify(payload, null, 2);
   const zip = new JSZip();
   zip.file(`${filename}.json`, json);
@@ -2003,11 +1985,15 @@ function importNotes(input) {
   reader.onload = e => {
     try {
       const payload = JSON.parse(e.target.result);
-      if (!payload.state) throw new Error('Invalid file');
+      if (!payload.state && !payload.compState) throw new Error('Invalid file');
       const author = payload.author || 'Someone';
-      const count = Object.keys(payload.state).length;
-      if (!confirm(`Import ${count} notes from ${author}?\n\nTheir decisions and notes will be merged into yours. If you both left notes on the same item, both are kept.`)) return;
-      Object.entries(payload.state).forEach(([id, data]) => {
+      const auditCount = Object.keys(payload.state || {}).length;
+      const compCount = Object.keys((payload.compState || {}).organisms || {}).length
+        + ((payload.compState?.custom?.organisms || []).length);
+      if (!confirm(`Import from ${author}?\n\n• ${auditCount} audit decisions\n• ${compCount} component entries\n\nAudit notes will be merged (both kept if different). Component and blocker data will be restored from this file.`)) return;
+
+      // Merge audit decisions
+      Object.entries(payload.state || {}).forEach(([id, data]) => {
         if (!state[id]) state[id] = {};
         if (!state[id].decision && data.decision) state[id].decision = data.decision;
         if (data.notes && !state[id].notes) state[id].notes = data.notes;
@@ -2016,9 +2002,52 @@ function importNotes(input) {
         }
       });
       save();
+
+      // Restore component state
+      if (payload.compState) {
+        // Merge organisms — imported fills in any gaps, existing data wins conflicts
+        const importedOrgs = payload.compState.organisms || {};
+        if (!compState.organisms) compState.organisms = {};
+        Object.entries(importedOrgs).forEach(([id, data]) => {
+          if (!compState.organisms[id]) compState.organisms[id] = data;
+        });
+        // Restore custom items if local has none
+        if (payload.compState.custom) {
+          if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
+          ['organisms','molecules','atoms'].forEach(tier => {
+            const imported = payload.compState.custom[tier] || [];
+            const existing = compState.custom[tier] || [];
+            const existingIds = new Set(existing.map(c => c.id));
+            imported.forEach(c => { if (!existingIds.has(c.id)) existing.push(c); });
+            compState.custom[tier] = existing;
+          });
+        }
+        // Merge molecules and atoms the same way
+        ['molecules','atoms'].forEach(tier => {
+          const importedTier = payload.compState[tier] || {};
+          if (!compState[tier]) compState[tier] = {};
+          Object.entries(importedTier).forEach(([id, data]) => {
+            if (!compState[tier][id]) compState[tier][id] = data;
+          });
+        });
+        saveComp();
+      }
+
+      // Restore blocker state if local is empty
+      if (payload.blockerState && (!blockerState || blockerState.every(b => !b.answer && !b.resolved))) {
+        blockerState.forEach((b, i) => {
+          if (payload.blockerState[i]) {
+            b.answer = payload.blockerState[i].answer || '';
+            b.resolved = payload.blockerState[i].resolved || false;
+          }
+        });
+        saveBlockers();
+      }
+
       refresh();
-      if (activeTab === 'decisions') renderCards();
-      alert(`Imported notes from ${author}.`);
+      renderCompTab();
+      if (activeTab === 'decisions') renderDecisionsSummary();
+      alert(`Imported from ${author}.`);
     } catch {
       alert('Could not read that file — make sure it\'s a notes file exported from this tool.');
     }
@@ -2200,6 +2229,7 @@ function renderBlockers() {
     ATOMS_DATA.forEach(a => { if (compState.atoms?.[a.id]?.status === 'deferred') deferredCompHtmlParts.push({name: a.name, cat: a.cat, id: a.id, type: 'atom', label: 'Atom'}); });
     (compState.custom?.organisms || []).forEach(c => { if (c.status === 'deferred') deferredCompHtmlParts.push({name: c.name, cat: c.cat, id: c.id, type: 'custom-org', label: 'Custom'}); });
     (compState.custom?.molecules || []).forEach(c => { if (c.status === 'deferred') deferredCompHtmlParts.push({name: c.name, cat: c.cat, id: c.id, type: 'custom-mol', label: 'Custom'}); });
+    (compState.custom?.atoms || []).forEach(c => { if (c.status === 'deferred') deferredCompHtmlParts.push({name: c.name, cat: c.cat, id: c.id, type: 'custom-atom', label: 'Custom'}); });
   }
   const deferredCompHtml = deferredCompHtmlParts.length === 0
     ? '<div class="empty" style="padding:12px 0;font-size:13px">No deferred components.</div>'
@@ -2456,50 +2486,78 @@ function renderDecisionsSummary() {
   const mode = viewModes.decisions;
   const toggle = viewToggleHtml('decisions');
 
-  // Components ready
-  const orgDone  = typeof ORGANISMS_DATA !== 'undefined' ? ORGANISMS_DATA.filter(o => compState.organisms?.[o.id]?.status === 'done') : [];
-  const molDone  = typeof MOLECULES_DATA !== 'undefined' ? MOLECULES_DATA.filter(m => compState.molecules?.[m.id]?.status === 'done') : [];
-  const atmDone  = typeof ATOMS_DATA !== 'undefined' ? ATOMS_DATA.filter(a => compState.atoms?.[a.id]?.status === 'done') : [];
+  // Components ready — standard + custom
+  const orgDone = [
+    ...(typeof ORGANISMS_DATA !== 'undefined' ? ORGANISMS_DATA.filter(o => compState.organisms?.[o.id]?.status === 'done') : []),
+    ...(compState.custom?.organisms || []).filter(c => c.status === 'done').map(c => ({...c, isCustom: true}))
+  ];
+  const molDone = [
+    ...(typeof MOLECULES_DATA !== 'undefined' ? MOLECULES_DATA.filter(m => compState.molecules?.[m.id]?.status === 'done') : []),
+    ...(compState.custom?.molecules || []).filter(c => c.status === 'done').map(c => ({...c, isCustom: true}))
+  ];
+  const atmDone = [
+    ...(typeof ATOMS_DATA !== 'undefined' ? ATOMS_DATA.filter(a => compState.atoms?.[a.id]?.status === 'done') : []),
+    ...(compState.custom?.atoms || []).filter(c => c.status === 'done').map(c => ({...c, isCustom: true}))
+  ];
   const compTotal = orgDone.length + molDone.length + atmDone.length;
   const grandTotal = (ORGANISMS_DATA?.length || 0) + (MOLECULES_DATA?.length || 0) + (ATOMS_DATA?.length || 0);
 
-  const allCompDone = [...orgDone, ...molDone, ...atmDone];
-
   const tiers = ['org', 'mol', 'atom'];
+  const tierKeys = { org: 'organisms', mol: 'molecules', atom: 'atoms' };
 
   const compTile = (i, tier) => `
-    <div class="comp-grid-tile" onclick="openGridModal('${tier}','${i.id}')">
+    <div class="comp-grid-tile" onclick="openGridModal('${i.isCustom ? 'custom-' + tier : tier}','${i.id}')">
       <span class="status-label sl-done">Ready</span>
-      <div class="comp-grid-name">${escH(i.name)}</div>
+      <div class="comp-grid-name">${escH(i.name)}${i.isCustom ? ' <span class="custom-label">Custom</span>' : ''}</div>
       <div class="comp-grid-cat">${escH(i.cat)}</div>
     </div>`;
 
   const compRow = (i, tier) => {
-    const data = tier === 'org' ? getOrgData(i.id) : tier === 'mol' ? getMolData(i.id) : getAtomData(i.id);
+    const data = i.isCustom ? i : (tier === 'org' ? getOrgData(i.id) : tier === 'mol' ? getMolData(i.id) : getAtomData(i.id));
+    const tk = tierKeys[tier];
     const isOpen = openCompDecCards.has(i.id);
-    const typesHtml = data.types
-      ? `<div class="notes-label" style="margin-top:14px">Types / States</div><div class="type-chips">${data.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>`
-      : '';
-    const variantsHtml = data.variants
-      ? `<div class="notes-label" style="margin-top:14px">Variants</div>${data.variants.map(v => `<div style="padding:7px 0;font-size:13px;color:var(--text);border-bottom:1px solid var(--border)">${escH(v.name)}${v.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${escH(v.notes)}</div>` : ''}</div>`).join('')}`
-      : '';
-    const notesHtml = data.notes
-      ? `<div class="notes-label" style="margin-top:14px">Notes</div><p style="font-size:13px;color:var(--text);line-height:1.5;margin:0">${escH(data.notes)}</p>`
-      : '';
-    const emptyHtml = !typesHtml && !variantsHtml && !notesHtml
-      ? '<p style="font-size:13px;color:var(--muted);margin:14px 0 0">No notes added yet.</p>'
-      : '';
+    const isEditing = editingCards.has(i.id);
+    let bodyHtml;
+    if (isEditing) {
+      if (tier === 'org') {
+        const variants = data.variants || [];
+        const notesHandler = i.isCustom ? `updateCustomNotes('${tk}','${i.id}',this.value)` : `updateOrgNotes('${i.id}',this.value)`;
+        const addVarFn = i.isCustom ? `addCustomVariant('${tk}','${i.id}')` : `addVariant('${i.id}')`;
+        const removeVarFn = i.isCustom ? `removeCustomVariant('${tk}','${i.id}')` : `removeVariant('${i.id}')`;
+        const varNameFn = (vi) => i.isCustom ? `updateCustomVariantName('${tk}','${i.id}',${vi},this.value)` : `updateVariantName('${i.id}',${vi},this.value)`;
+        const varNotesFn = (vi) => i.isCustom ? `updateCustomVariantNotes('${tk}','${i.id}',${vi},this.value)` : `updateVariantNotes('${i.id}',${vi},this.value)`;
+        bodyHtml = `
+          <div class="notes-label" style="margin-top:14px">Component Notes</div>
+          <textarea class="notes-input" placeholder="Describe this component…" oninput="${notesHandler}">${escH(data.notes)}</textarea>
+          <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${variants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="${addVarFn}">+</button><button class="variant-btn" onclick="${removeVarFn}">−</button></div></div>
+          ${variants.map((v, vi) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${vi+1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="${varNameFn(vi)}"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="${varNotesFn(vi)}">${escH(v.notes)}</textarea></div>`).join('')}
+          <div class="comp-card-actions"><button class="comp-mark-btn" onclick="toggleEditMode('${i.id}')">Done editing</button></div>`;
+      } else {
+        const notesHandler = i.isCustom ? `updateCustomNotes('${tk}','${i.id}',this.value)` : (tier === 'mol' ? `updateMolNotes('${i.id}',this.value)` : `updateAtomNotes('${i.id}',this.value)`);
+        bodyHtml = `
+          <div class="notes-label" style="margin-top:14px">Notes</div>
+          <textarea class="notes-input" placeholder="Notes…" oninput="${notesHandler}">${escH(data.notes)}</textarea>
+          ${data.types && data.types.length ? `<div class="notes-label" style="margin-top:12px">Types / States</div><div class="type-chips">${data.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>` : ''}
+          <div class="comp-card-actions"><button class="comp-mark-btn" onclick="toggleEditMode('${i.id}')">Done editing</button></div>`;
+      }
+    } else {
+      const notesHtml = data.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(data.notes)}</p>` : '';
+      const typesHtml = data.types && data.types.length ? `<div class="notes-label" style="margin-top:12px">Types / States</div><div class="type-chips">${data.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>` : '';
+      const variantsHtml = data.variants && data.variants.length ? `<div class="notes-label" style="margin-top:12px">Variants (${data.variants.length})</div>${data.variants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : '';
+      const emptyHtml = !notesHtml && !typesHtml && !variantsHtml ? '<span class="ro-empty">No notes added yet.</span>' : '';
+      bodyHtml = `${notesHtml}${typesHtml}${variantsHtml}${emptyHtml}
+        <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="toggleEditMode('${i.id}')">Edit</button></div>`;
+    }
     return `
       <div class="comp-card ${isOpen ? 'open' : ''}" id="cdc-${i.id}">
         <div class="comp-card-header" onclick="toggleCompDecCard('${i.id}')">
           <span class="status-label sl-done">Ready</span>
           <span class="comp-card-name">${escH(i.name)}</span>
+          ${i.isCustom ? '<span class="custom-label">Custom</span>' : ''}
           <span style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto">${escH(i.cat)}</span>
           <span class="comp-chevron">▶</span>
         </div>
-        <div class="comp-card-body ${isOpen ? '' : 'hidden'}">
-          ${typesHtml}${variantsHtml}${notesHtml}${emptyHtml}
-        </div>
+        <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
       </div>`;
   };
 
@@ -3041,7 +3099,11 @@ function statusLabel(s) {
 // Push deferred items to the bottom of a section without removing them
 function sortDeferred(arr, getStatus) {
   const fn = getStatus || (x => x.status || 'todo');
-  return [...arr.filter(x => fn(x) !== 'deferred'), ...arr.filter(x => fn(x) === 'deferred')];
+  return [
+    ...arr.filter(x => fn(x) === 'done'),
+    ...arr.filter(x => fn(x) !== 'done' && fn(x) !== 'deferred'),
+    ...arr.filter(x => fn(x) === 'deferred')
+  ];
 }
 
 // ─────────────────────────────────────────────
@@ -3154,18 +3216,23 @@ function renderOrganisms() {
         const isOpen = openCompCards.has(c.id);
         const isEditing = editingCards.has(c.id);
         const ro = (c.status === 'done' || c.status === 'deferred') && !isEditing;
+        const cVariants = c.variants || [];
         const bodyHtml = ro
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${cVariants.filter(v=>v.name?.trim()).length ? `<div class="notes-label" style="margin-top:12px">Variants (${cVariants.filter(v=>v.name?.trim()).length})</div>${cVariants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-org','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:14px">Notes</div>
-             <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+          : `<div class="notes-label" style="margin-top:14px">Component Notes</div>
+             <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${cVariants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addCustomVariant('organisms','${c.id}')">+</button><button class="variant-btn" onclick="removeCustomVariant('organisms','${c.id}')">−</button></div></div>
+             ${cVariants.map((v, i) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${i + 1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateCustomVariantName('organisms','${c.id}', ${i}, this.value)"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateCustomVariantNotes('organisms','${c.id}', ${i}, this.value)">${escH(v.notes)}</textarea></div>`).join('')}
              <div class="comp-card-actions">${actionsHtml('custom-org', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
-              <span class="status-label sl-${c.status}">${statusLabel(c.status)}</span>
+              <span class="status-label sl-${c.status}" id="sl-${c.id}">${statusLabel(c.status)}</span>
               <input type="text" value="${escH(c.name)}" placeholder="Component name"
                 style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
+                onclick="event.stopPropagation()"
                 oninput="updateCustomName('organisms','${c.id}',this.value)">
               <span class="custom-label">Custom</span>
               <span class="comp-chevron">▶</span>
@@ -3438,7 +3505,7 @@ function setCompView(mode) {
 // ── Custom items ──
 function addCustomItem(tier, cat) {
   if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
-  const newItem = { id: 'custom-' + Date.now(), name: 'New component', cat, notes: '', status: 'todo' };
+  const newItem = { id: 'custom-' + Date.now(), name: 'New component', cat, notes: '', status: 'todo', variants: [{ name: 'Variant 1', notes: '' }] };
   compState.custom[tier].push(newItem);
   saveComp();
   const y = window.scrollY;
@@ -3468,6 +3535,36 @@ function updateCustomName(tier, id, value) {
 function updateCustomNotes(tier, id, value) {
   const c = (compState.custom?.[tier] || []).find(x => x.id === id);
   if (c) { c.notes = value; if (c.status === 'todo' && value.trim()) c.status = 'progress'; saveComp(); }
+}
+
+function addCustomVariant(tier, id) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (!c) return;
+  if (!c.variants) c.variants = [];
+  c.variants.push({ name: 'New variant', notes: '' });
+  saveComp();
+  const y = window.scrollY;
+  renderCompTab();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+function removeCustomVariant(tier, id) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (!c || !c.variants || c.variants.length <= 1) return;
+  c.variants.pop();
+  saveComp();
+  const y = window.scrollY;
+  renderCompTab();
+  updateCompProgress();
+  window.scrollTo(0, y);
+}
+function updateCustomVariantName(tier, id, index, value) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (c && c.variants?.[index]) { c.variants[index].name = value; saveComp(); }
+}
+function updateCustomVariantNotes(tier, id, index, value) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (c && c.variants?.[index]) { c.variants[index].notes = value; saveComp(); }
 }
 
 // ─────────────────────────────────────────────

@@ -47,6 +47,18 @@ The tool is being expanded from a single-purpose audit tool into a full project 
 6. If both left notes on the same item, both versions are kept with James's name prepended
 7. Megan synthesizes and that becomes the final brief
 
+**What the export file contains (as of June 2026):**
+- `state` — all audit feedback decisions and notes
+- `compState` — all component notes, variants, statuses (organisms/molecules/atoms, including custom items)
+- `blockerState` — all blocker answers
+
+**Import merge behavior:**
+- Audit decisions: merged (both notes kept if different, author name prepended)
+- Components: imported fills gaps only — existing local data wins conflicts
+- Blockers: imported only if local blockers are all empty
+
+**Important:** The export captures data from the browser you're on. The live site (`vast-megan.github.io`) and a locally opened file (`file://`) have completely separate storage — always export from the live URL.
+
 ---
 
 ## Pushing Updates (VS Code workflow)
@@ -97,8 +109,9 @@ No Terminal needed.
 ---
 
 ## What's Next
-- Add "Generate Figma Brief" button to Brief tab (currently shows a "Copy to Clipboard" button)
-- Eventually: push final brief into a Figma board via Claude + Figma MCP
+- Fill in remaining organisms (Timeline, Diagram, Quick Links, Resource Grid, ToC, Filter Bar, CTA Section, Contact Form, Newsletter, Drawer, Toast, Empty State, Error State, Loading State)
+- Fill in molecules and atoms (lighter notes informed by organism work)
+- Push final brief into a Figma board via Claude + Figma MCP
 - Share tool with James for parallel review using the Export/Import workflow
 
 ---
@@ -140,6 +153,13 @@ All status badges use the `.status-label.sl-*` CSS class. Never use the old `.ba
 4. **Ready** → read-only showing notes, variants, types; "Unmark" + "Edit" buttons
 5. **Editing a ready/deferred card** → full editable form + "Done editing" button
 
+**Custom component cards** behave identically to standard cards:
+- Same card styling (no orange left border — the only visual indicator is the small "Custom" label in the header)
+- Same variants section with + / − buttons, numbered variant inputs
+- Clicking the name field does NOT collapse the card (event propagation stopped)
+- New custom cards start with one blank variant by default
+- Custom variant functions: `addCustomVariant`, `removeCustomVariant`, `updateCustomVariantName`, `updateCustomVariantNotes`
+
 **Audit Feedback:**
 1. **Not Started** → editable — shows screenshot, hint box, stakeholder comments, then Notes textarea, then decision buttons at the bottom
 2. **Decided (Keep/Cut/Deferred)** → clicking a decision button immediately locks the card to read-only. The decision IS the final action — no separate "Mark as ready" step.
@@ -155,8 +175,8 @@ All status badges use the `.status-label.sl-*` CSS class. Never use the old `.ba
 
 ### Deferred items behavior
 - Deferred items are **not** visually dimmed — opacity reduction was removed
-- They are sorted to the **bottom of their category section** automatically
-- This applies to all three component tiers (Organisms, Molecules, Atoms)
+- Sort order within each category section: **Ready → In Progress / Not Started → Deferred**
+- This applies to all three component tiers (Organisms, Molecules, Atoms) and custom items
 - In the Blockers tab, deferred component items appear in their own "Deferred Components" sub-section
 
 ### Modal close behavior
@@ -168,7 +188,7 @@ All status badges use the `.status-label.sl-*` CSS class. Never use the old `.ba
 
 The Decisions tab has three sections, each with a filter:
 
-1. **Components Ready** — items marked "Ready" across Organisms, Molecules, Atoms. Each category (Organisms/Molecules/Atoms) has its own sub-header with a "Go to Components →" link. Cards are read-only, expand to show notes/variants/types.
+1. **Components Ready** — items marked "Ready" across Organisms, Molecules, Atoms. Each category has its own sub-header. Cards use the same read-only/edit state machine as the Components tab — "Edit" button opens the full editable form in place, "Done editing" locks it back. No navigation away; no separate states.
 
 2. **Audit Decisions** — all audit items with a decision made (Keep/Cut/Deferred). Uses identical card logic to the Audit Feedback tab — same read-only/edit states, same content structure.
 
@@ -266,6 +286,26 @@ Built from `antinomy-brief-checklist.md`. Lives in the Components tab of the too
 **Molecules (37 total):** Text & Display, Buttons & Links, Form Controls, Navigation, Media, Feedback, Content Blocks
 
 **Atoms (15 total):** Color, Typography, Spacing, Shape, Elevation, Motion, Grid, Icons, Base elements
+
+---
+
+## Brief Tab — How It Works (June 2026)
+
+The Brief tab auto-generates a text document from your component and audit data.
+
+**What it generates:**
+- Header (date, author, status)
+- Organisms — Ready: all organisms marked done, with notes and numbered variants
+- Organisms — In Progress: organisms marked in-progress
+- Organisms — Deferred: just names + any notes
+- Audit Decisions: keep/cut/defer summary (only appears if you've made audit decisions)
+- Next Steps: standard closing section with Figma file key
+
+**Editable:** After generating, click anywhere in the text to edit it before copying. The "Copy to Clipboard" button captures your edited version.
+
+**Trigger:** The brief generates as soon as any component has been filled in. It no longer requires audit decisions to show content.
+
+**Copy to Clipboard:** Works on the edited text, not the original generated version.
 
 ---
 
