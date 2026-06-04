@@ -3026,17 +3026,17 @@ if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms:
 function getOrgData(id) {
   const def = ORGANISMS_DATA.find(o => o.id === id);
   const saved = compState.organisms?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})) };
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})), customName: saved.customName || '' };
 }
 function getMolData(id) {
   const def = MOLECULES_DATA.find(m => m.id === id);
   const saved = compState.molecules?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo' };
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '' };
 }
 function getAtomData(id) {
   const def = ATOMS_DATA.find(a => a.id === id);
   const saved = compState.atoms?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo' };
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '' };
 }
 
 function ensureOrg(id) {
@@ -3132,7 +3132,9 @@ function actionsHtml(type, id, status, isCustom) {
   const doneEditing= `<button class="comp-mark-btn" onclick="toggleEditMode('${id}')">Done editing</button>`;
   const defer      = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','deferred')" style="color:var(--muted)">Deferred</button>`;
   const restore    = `<button class="comp-unmark-btn" onclick="setCompStatus('${type}','${id}','todo')">Restore</button>`;
-  const del        = isCustom ? `<button class="delete-item-btn" onclick="deleteCustomItem('${type}','${id}')">✕ Delete</button>` : '';
+  const del        = isCustom
+    ? `<button class="delete-item-btn" onclick="deleteCustomItem('${type}','${id}')">✕ Delete</button>`
+    : `<button class="delete-item-btn" onclick="deleteStandardCard('${type}','${id}')">✕ Delete</button>`;
   if (status === 'done')     return `${del}${unmark}${doneEditing}`;
   if (status === 'deferred') return `${del}${restore}${doneEditing}`;
   return `${del}${defer}${ready}`;
@@ -3169,10 +3171,12 @@ function renderOrganisms() {
   if (compListMode === 'grid') {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
+      const visible = items.filter(def => !compState.organisms?.[def.id]?.hidden);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
-      sortDeferred(items, def => compState.organisms?.[def.id]?.status || 'todo').forEach(def => {
+      sortDeferred(visible, def => compState.organisms?.[def.id]?.status || 'todo').forEach(def => {
         const s = compState.organisms?.[def.id]?.status || 'todo';
-        html += gridTile(def.id, def.name, cat, s, false, 'org');
+        const displayName = compState.organisms?.[def.id]?.customName || def.name;
+        html += gridTile(def.id, displayName, cat, s, false, 'org');
       });
       sortDeferred(custom).forEach(c => html += gridTile(c.id, c.name, cat, c.status, true, 'custom-org'));
       html += `</div>`;
@@ -3180,16 +3184,18 @@ function renderOrganisms() {
   } else {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
-      const allItems = sortDeferred(items, def => compState.organisms?.[def.id]?.status || 'todo');
-      const done = items.filter(i => compState.organisms?.[i.id]?.status === 'done').length
+      const visible = items.filter(def => !compState.organisms?.[def.id]?.hidden);
+      const allItems = sortDeferred(visible, def => compState.organisms?.[def.id]?.status || 'todo');
+      const done = visible.filter(i => compState.organisms?.[i.id]?.status === 'done').length
                  + custom.filter(c => c.status === 'done').length;
-      const total = items.length + custom.length;
+      const total = visible.length + custom.length;
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
         <span>${escH(cat)} — ${done}/${total}</span>
         <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button>
       </div>`;
-      allItems.forEach(def => {   // already sorted: deferred pushed to bottom
+      allItems.forEach(def => {
         const d = getOrgData(def.id);
+        const displayName = d.customName || def.name;
         const isOpen = openCompCards.has(def.id);
         const isEditing = editingCards.has(def.id);
         const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
@@ -3197,7 +3203,9 @@ function renderOrganisms() {
           ? `${d.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
              ${d.variants.length ? `<div class="notes-label" style="margin-top:12px">Variants (${d.variants.length})</div>${d.variants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('org','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:14px">Component Notes</div>
+          : `<div class="notes-label" style="margin-top:14px">Name</div>
+             <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateOrgName('${def.id}', this.value)">
+             <div class="notes-label">Component Notes</div>
              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior, Vast-specific constraints…" oninput="updateOrgNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
              <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${d.variants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addVariant('${def.id}')">+</button><button class="variant-btn" onclick="removeVariant('${def.id}')">−</button></div></div>
              ${d.variants.map((v, i) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${i + 1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateVariantName('${def.id}', ${i}, this.value)"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${def.id}', ${i}, this.value)">${escH(v.notes)}</textarea></div>`).join('')}
@@ -3206,7 +3214,7 @@ function renderOrganisms() {
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
               <span class="status-label sl-${d.status}" id="sl-${def.id}">${statusLabel(d.status)}</span>
-              <span class="comp-card-name">${escH(def.name)}</span>
+              <span class="comp-card-name">${escH(displayName)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}" id="ccb-${def.id}">${bodyHtml}</div>
@@ -3221,7 +3229,9 @@ function renderOrganisms() {
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
              ${cVariants.filter(v=>v.name?.trim()).length ? `<div class="notes-label" style="margin-top:12px">Variants (${cVariants.filter(v=>v.name?.trim()).length})</div>${cVariants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-org','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:14px">Component Notes</div>
+          : `<div class="notes-label" style="margin-top:14px">Name</div>
+             <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateCustomName('organisms','${c.id}',this.value)">
+             <div class="notes-label">Component Notes</div>
              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
              <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${cVariants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addCustomVariant('organisms','${c.id}')">+</button><button class="variant-btn" onclick="removeCustomVariant('organisms','${c.id}')">−</button></div></div>
              ${cVariants.map((v, i) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${i + 1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateCustomVariantName('organisms','${c.id}', ${i}, this.value)"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateCustomVariantNotes('organisms','${c.id}', ${i}, this.value)">${escH(v.notes)}</textarea></div>`).join('')}
@@ -3230,10 +3240,7 @@ function renderOrganisms() {
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
               <span class="status-label sl-${c.status}" id="sl-${c.id}">${statusLabel(c.status)}</span>
-              <input type="text" value="${escH(c.name)}" placeholder="Component name"
-                style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
-                onclick="event.stopPropagation()"
-                oninput="updateCustomName('organisms','${c.id}',this.value)">
+              <span class="comp-card-name">${escH(c.name)}</span>
               <span class="custom-label">Custom</span>
               <span class="comp-chevron">▶</span>
             </div>
@@ -3265,15 +3272,17 @@ function renderMolecules() {
   } else {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
-      const done = items.filter(i => compState.molecules?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
-      const sortedMolItems = sortDeferred(items, def => compState.molecules?.[def.id]?.status || 'todo');
+      const visible = items.filter(def => !compState.molecules?.[def.id]?.hidden);
+      const done = visible.filter(i => compState.molecules?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
+      const sortedMolItems = sortDeferred(visible, def => compState.molecules?.[def.id]?.status || 'todo');
       const sortedMolCustom = sortDeferred(custom);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
-        <span>${escH(cat)} — ${done}/${items.length + custom.length}</span>
+        <span>${escH(cat)} — ${done}/${visible.length + custom.length}</span>
         <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('molecules','${escH(cat)}')">+ Add</button>
       </div>`;
       sortedMolItems.forEach(def => {
         const d = getMolData(def.id);
+        const displayName = d.customName || def.name;
         const isOpen = openCompCards.has(def.id);
         const isEditing = editingCards.has(def.id);
         const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
@@ -3282,7 +3291,9 @@ function renderMolecules() {
              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
              ${d.notes ? `<div class="notes-label" style="margin-top:4px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('mol','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:12px">Types / States</div>
+          : `<div class="notes-label" style="margin-top:14px">Name</div>
+             <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateMolName('${def.id}', this.value)">
+             <div class="notes-label">Types / States</div>
              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" style="min-height:64px" placeholder="Types, states, rules, visual constraints…" oninput="updateMolNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
@@ -3291,7 +3302,7 @@ function renderMolecules() {
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
               <span class="status-label sl-${d.status}" id="sl-${def.id}">${statusLabel(d.status)}</span>
-              <span class="comp-card-name">${escH(def.name)}</span>
+              <span class="comp-card-name">${escH(displayName)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
@@ -3304,16 +3315,16 @@ function renderMolecules() {
         const bodyHtml = ro
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-mol','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+          : `<div class="notes-label" style="margin-top:14px">Name</div>
+             <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateCustomName('molecules','${c.id}',this.value)">
+             <div class="notes-label">Notes</div>
              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('molecules','${c.id}',this.value)">${escH(c.notes)}</textarea>
              <div class="comp-card-actions">${actionsHtml('custom-mol', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
               <span class="status-label sl-${c.status}">${statusLabel(c.status)}</span>
-              <input type="text" value="${escH(c.name)}" placeholder="Component name"
-                style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
-                oninput="updateCustomName('molecules','${c.id}',this.value)">
+              <span class="comp-card-name">${escH(c.name)}</span>
               <span class="custom-label">Custom</span>
               <span class="comp-chevron">▶</span>
             </div>
@@ -3345,29 +3356,33 @@ function renderAtoms() {
   } else {
     Object.entries(groups).forEach(([cat, items]) => {
       const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
-      const done = items.filter(i => compState.atoms?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
-      const sortedAtomItems = sortDeferred(items, def => compState.atoms?.[def.id]?.status || 'todo');
+      const visible = items.filter(def => !compState.atoms?.[def.id]?.hidden);
+      const done = visible.filter(i => compState.atoms?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
+      const sortedAtomItems = sortDeferred(visible, def => compState.atoms?.[def.id]?.status || 'todo');
       const sortedAtomCustom = sortDeferred(custom);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
-        <span>${escH(cat)} — ${done}/${items.length + custom.length}</span>
+        <span>${escH(cat)} — ${done}/${visible.length + custom.length}</span>
         <button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('atoms','${escH(cat)}')">+ Add</button>
       </div>`;
       sortedAtomItems.forEach(def => {
         const d = getAtomData(def.id);
+        const displayName = d.customName || def.name;
         const isOpen = openCompCards.has(def.id);
         const isEditing = editingCards.has(def.id);
         const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
         const bodyHtml = ro
           ? `${d.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('atom','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+          : `<div class="notes-label" style="margin-top:14px">Name</div>
+             <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateAtomName('${def.id}', this.value)">
+             <div class="notes-label">Notes</div>
              <textarea class="notes-input" style="min-height:56px" placeholder="Values, rules, decisions, constraints…" oninput="updateAtomNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
              <div class="comp-card-actions">${actionsHtml('atom', def.id, d.status, false)}</div>`;
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${def.id}')">
               <span class="status-label sl-${d.status}" id="sl-${def.id}">${statusLabel(d.status)}</span>
-              <span class="comp-card-name">${escH(def.name)}</span>
+              <span class="comp-card-name">${escH(displayName)}</span>
               <span class="comp-chevron">▶</span>
             </div>
             <div class="comp-card-body ${isOpen ? '' : 'hidden'}">${bodyHtml}</div>
@@ -3380,16 +3395,16 @@ function renderAtoms() {
         const bodyHtml = ro
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-atom','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
-          : `<div class="notes-label" style="margin-top:14px">Notes</div>
+          : `<div class="notes-label" style="margin-top:14px">Name</div>
+             <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Token / element name" oninput="updateCustomName('atoms','${c.id}',this.value)">
+             <div class="notes-label">Notes</div>
              <textarea class="notes-input" placeholder="Describe this element…" oninput="updateCustomNotes('atoms','${c.id}',this.value)">${escH(c.notes)}</textarea>
              <div class="comp-card-actions">${actionsHtml('custom-atom', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
             <div class="comp-card-header" onclick="toggleCompCard('${c.id}')">
               <span class="status-label sl-${c.status}">${statusLabel(c.status)}</span>
-              <input type="text" value="${escH(c.name)}" placeholder="Token / element name"
-                style="flex:1;border:none;background:transparent;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none"
-                oninput="updateCustomName('atoms','${c.id}',this.value)">
+              <span class="comp-card-name">${escH(c.name)}</span>
               <span class="custom-label">Custom</span>
               <span class="comp-chevron">▶</span>
             </div>
@@ -3529,12 +3544,31 @@ function deleteCustomItem(tier, id) {
 
 function updateCustomName(tier, id, value) {
   const c = (compState.custom?.[tier] || []).find(x => x.id === id);
-  if (c) { c.name = value; saveComp(); }
+  if (c) {
+    c.name = value; saveComp();
+    const card = document.getElementById('cc-' + id);
+    if (card) { const nameEl = card.querySelector('.comp-card-name'); if (nameEl) nameEl.textContent = value || 'New component'; }
+  }
 }
 
 function updateCustomNotes(tier, id, value) {
   const c = (compState.custom?.[tier] || []).find(x => x.id === id);
   if (c) { c.notes = value; if (c.status === 'todo' && value.trim()) c.status = 'progress'; saveComp(); }
+}
+
+function updateOrgName(id, value) { ensureOrg(id).customName = value; saveComp(); }
+function updateMolName(id, value) { ensureMol(id).customName = value; saveComp(); }
+function updateAtomName(id, value) { ensureAtom(id).customName = value; saveComp(); }
+
+function deleteStandardCard(tier, id) {
+  if (!confirm('Remove this card? You can add a custom card to replace it.')) return;
+  if (tier === 'org') ensureOrg(id).hidden = true;
+  else if (tier === 'mol') ensureMol(id).hidden = true;
+  else ensureAtom(id).hidden = true;
+  saveComp();
+  const y = window.scrollY;
+  renderCompTab(); updateCompProgress();
+  window.scrollTo(0, y);
 }
 
 function addCustomVariant(tier, id) {
