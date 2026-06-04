@@ -1706,8 +1706,8 @@ function renderBrief() {
   t += `Status: Re-engaging Antinomy after internal alignment\n\n`;
 
   // ── ORGANISMS ──
-  function writeOrg(name, notes, variants) {
-    let block = `• ${name}\n`;
+  function writeOrg(name, notes, variants, cat) {
+    let block = `• ${name}${cat ? ` [${cat}]` : ''}\n`;
     if (notes?.trim()) block += `  Notes: ${notes.trim()}\n`;
     const filled = (variants || []).filter(v => v.name?.trim());
     if (filled.length > 0) {
@@ -1726,7 +1726,7 @@ function renderBrief() {
     ORGANISMS_DATA.forEach(def => {
       const d = compState.organisms?.[def.id];
       if (!d) return;
-      const entry = { name: def.name, notes: d.notes, variants: d.variants };
+      const entry = { name: d.customName || def.name, notes: d.notes, variants: d.variants, cat: d.customCat || def.cat };
       if (d.status === 'done') readyOrgs.push(entry);
       else if (d.status === 'progress') progressOrgs.push(entry);
       else if (d.status === 'deferred') deferredOrgs.push(entry);
@@ -1744,16 +1744,16 @@ function renderBrief() {
     t += `${line}\n`;
     t += `ORGANISMS — READY (${totalReady})\n`;
     t += `${line}\n\n`;
-    readyOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
-    customReady.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
+    readyOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
+    customReady.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
   }
 
   if (progressOrgs.length + customProgress.length > 0) {
     t += `${line}\n`;
     t += `ORGANISMS — IN PROGRESS\n`;
     t += `${line}\n\n`;
-    progressOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
-    customProgress.forEach(o => { t += writeOrg(o.name, o.notes, o.variants); });
+    progressOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
+    customProgress.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
   }
 
   if (totalDeferred > 0) {
@@ -3026,17 +3026,17 @@ if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms:
 function getOrgData(id) {
   const def = ORGANISMS_DATA.find(o => o.id === id);
   const saved = compState.organisms?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})), customName: saved.customName || '' };
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})), customName: saved.customName || '', customCat: saved.customCat || '' };
 }
 function getMolData(id) {
   const def = MOLECULES_DATA.find(m => m.id === id);
   const saved = compState.molecules?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '' };
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '', customCat: saved.customCat || '' };
 }
 function getAtomData(id) {
   const def = ATOMS_DATA.find(a => a.id === id);
   const saved = compState.atoms?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '' };
+  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '', customCat: saved.customCat || '' };
 }
 
 function ensureOrg(id) {
@@ -3165,15 +3165,25 @@ function switchToListAndOpen(id) {
 function renderOrganisms() {
   const el = document.getElementById('cv-organisms');
   if (!el) return;
-  const groups = groupByKey(ORGANISMS_DATA, 'cat');
+  // Build dynamic groups — cards move when customCat changes
+  const orgCatOrder = [...new Set(ORGANISMS_DATA.map(d => d.cat))];
+  const orgDynamic = {};
+  orgCatOrder.forEach(cat => { orgDynamic[cat] = []; });
+  ORGANISMS_DATA.filter(def => !compState.organisms?.[def.id]?.hidden).forEach(def => {
+    const cat = compState.organisms?.[def.id]?.customCat || def.cat;
+    if (!orgDynamic[cat]) orgDynamic[cat] = [];
+    orgDynamic[cat].push(def);
+  });
+  const allOrgCats = [...new Set([...orgCatOrder, ...Object.keys(orgDynamic)])];
   let html = '';
 
   if (compListMode === 'grid') {
-    Object.entries(groups).forEach(([cat, items]) => {
+    allOrgCats.forEach(cat => {
+      const items = orgDynamic[cat] || [];
       const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
-      const visible = items.filter(def => !compState.organisms?.[def.id]?.hidden);
+      if (!items.length && !custom.length) return;
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('organisms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
-      sortDeferred(visible, def => compState.organisms?.[def.id]?.status || 'todo').forEach(def => {
+      sortDeferred(items, def => compState.organisms?.[def.id]?.status || 'todo').forEach(def => {
         const s = compState.organisms?.[def.id]?.status || 'todo';
         const displayName = compState.organisms?.[def.id]?.customName || def.name;
         html += gridTile(def.id, displayName, cat, s, false, 'org');
@@ -3182,9 +3192,11 @@ function renderOrganisms() {
       html += `</div>`;
     });
   } else {
-    Object.entries(groups).forEach(([cat, items]) => {
+    allOrgCats.forEach(cat => {
+      const items = orgDynamic[cat] || [];
       const custom = (compState.custom?.organisms || []).filter(c => c.cat === cat);
-      const visible = items.filter(def => !compState.organisms?.[def.id]?.hidden);
+      if (!items.length && !custom.length) return;
+      const visible = items;
       const allItems = sortDeferred(visible, def => compState.organisms?.[def.id]?.status || 'todo');
       const done = visible.filter(i => compState.organisms?.[i.id]?.status === 'done').length
                  + custom.filter(c => c.status === 'done').length;
@@ -3205,6 +3217,8 @@ function renderOrganisms() {
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('org','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateOrgName('${def.id}', this.value)">
+             <div class="notes-label">Section</div>
+             <input class="variant-name-input" type="text" value="${escH(d.customCat || def.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateOrgCat('${def.id}', this.value)">
              <div class="notes-label">Component Notes</div>
              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior, Vast-specific constraints…" oninput="updateOrgNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
              <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${d.variants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addVariant('${def.id}')">+</button><button class="variant-btn" onclick="removeVariant('${def.id}')">−</button></div></div>
@@ -3231,6 +3245,8 @@ function renderOrganisms() {
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-org','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateCustomName('organisms','${c.id}',this.value)">
+             <div class="notes-label">Section</div>
+             <input class="variant-name-input" type="text" value="${escH(c.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateCustomCat('organisms','${c.id}',this.value)">
              <div class="notes-label">Component Notes</div>
              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
              <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${cVariants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addCustomVariant('organisms','${c.id}')">+</button><button class="variant-btn" onclick="removeCustomVariant('organisms','${c.id}')">−</button></div></div>
@@ -3293,6 +3309,8 @@ function renderMolecules() {
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('mol','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateMolName('${def.id}', this.value)">
+             <div class="notes-label">Section</div>
+             <input class="variant-name-input" type="text" value="${escH(d.customCat || def.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateMolCat('${def.id}', this.value)">
              <div class="notes-label">Types / States</div>
              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
              <div class="notes-label">Notes</div>
@@ -3317,6 +3335,8 @@ function renderMolecules() {
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-mol','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateCustomName('molecules','${c.id}',this.value)">
+             <div class="notes-label">Section</div>
+             <input class="variant-name-input" type="text" value="${escH(c.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateCustomCat('molecules','${c.id}',this.value)">
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('molecules','${c.id}',this.value)">${escH(c.notes)}</textarea>
              <div class="comp-card-actions">${actionsHtml('custom-mol', c.id, c.status, true)}</div>`;
@@ -3375,6 +3395,8 @@ function renderAtoms() {
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('atom','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateAtomName('${def.id}', this.value)">
+             <div class="notes-label">Section</div>
+             <input class="variant-name-input" type="text" value="${escH(d.customCat || def.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateAtomCat('${def.id}', this.value)">
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" style="min-height:56px" placeholder="Values, rules, decisions, constraints…" oninput="updateAtomNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
              <div class="comp-card-actions">${actionsHtml('atom', def.id, d.status, false)}</div>`;
@@ -3397,6 +3419,8 @@ function renderAtoms() {
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-atom','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Token / element name" oninput="updateCustomName('atoms','${c.id}',this.value)">
+             <div class="notes-label">Section</div>
+             <input class="variant-name-input" type="text" value="${escH(c.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateCustomCat('atoms','${c.id}',this.value)">
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" placeholder="Describe this element…" oninput="updateCustomNotes('atoms','${c.id}',this.value)">${escH(c.notes)}</textarea>
              <div class="comp-card-actions">${actionsHtml('custom-atom', c.id, c.status, true)}</div>`;
@@ -3559,6 +3583,13 @@ function updateCustomNotes(tier, id, value) {
 function updateOrgName(id, value) { ensureOrg(id).customName = value; saveComp(); }
 function updateMolName(id, value) { ensureMol(id).customName = value; saveComp(); }
 function updateAtomName(id, value) { ensureAtom(id).customName = value; saveComp(); }
+function updateOrgCat(id, value) { ensureOrg(id).customCat = value; saveComp(); }
+function updateMolCat(id, value) { ensureMol(id).customCat = value; saveComp(); }
+function updateAtomCat(id, value) { ensureAtom(id).customCat = value; saveComp(); }
+function updateCustomCat(tier, id, value) {
+  const c = (compState.custom?.[tier] || []).find(x => x.id === id);
+  if (c) { c.cat = value; saveComp(); }
+}
 
 function deleteStandardCard(tier, id) {
   if (!confirm('Remove this card? You can add a custom card to replace it.')) return;
