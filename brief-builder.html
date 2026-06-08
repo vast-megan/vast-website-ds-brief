@@ -3449,7 +3449,8 @@ function renderOrganisms() {
     if (!orgDynamic[cat]) orgDynamic[cat] = [];
     orgDynamic[cat].push(def);
   });
-  const allOrgCats = [...new Set([...orgCatOrder, ...Object.keys(orgDynamic)])];
+  const customOrgCats = (compState.custom?.organisms || []).map(c => c.cat);
+  const allOrgCats = [...new Set([...orgCatOrder, ...Object.keys(orgDynamic), ...customOrgCats])];
   let html = '';
 
   if (compListMode === 'grid') {
@@ -3559,10 +3560,12 @@ function renderMolecules() {
   const el = document.getElementById('cv-molecules');
   if (!el) return;
   const groups = groupByKey(MOLECULES_DATA, 'cat');
+  const allMolCats = [...new Set([...Object.keys(groups), ...(compState.custom?.molecules || []).map(c => c.cat)])];
   let html = '';
 
   if (compListMode === 'grid') {
-    Object.entries(groups).forEach(([cat, items]) => {
+    allMolCats.forEach(cat => {
+      const items = groups[cat] || [];
       const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('molecules','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
       sortDeferred(items, def => compState.molecules?.[def.id]?.status || 'todo').forEach(def => {
@@ -3573,7 +3576,8 @@ function renderMolecules() {
       html += `</div>`;
     });
   } else {
-    Object.entries(groups).forEach(([cat, items]) => {
+    allMolCats.forEach(cat => {
+      const items = groups[cat] || [];
       const custom = (compState.custom?.molecules || []).filter(c => c.cat === cat);
       const visible = items.filter(def => !compState.molecules?.[def.id]?.hidden);
       const done = visible.filter(i => compState.molecules?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
@@ -3659,10 +3663,12 @@ function renderAtoms() {
   const el = document.getElementById('cv-atoms');
   if (!el) return;
   const groups = groupByKey(ATOMS_DATA, 'cat');
+  const allAtomCats = [...new Set([...Object.keys(groups), ...(compState.custom?.atoms || []).map(c => c.cat)])];
   let html = '';
 
   if (compListMode === 'grid') {
-    Object.entries(groups).forEach(([cat, items]) => {
+    allAtomCats.forEach(cat => {
+      const items = groups[cat] || [];
       const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
       html += `<div class="section-divider" style="display:flex;align-items:center;justify-content:space-between"><span>${escH(cat)}</span><button class="add-item-btn" style="width:auto;padding:3px 10px;font-size:10px" onclick="addCustomItem('atoms','${escH(cat)}')">+ Add</button></div><div class="comp-grid-wrap">`;
       sortDeferred(items, def => compState.atoms?.[def.id]?.status || 'todo').forEach(def => {
@@ -3673,7 +3679,8 @@ function renderAtoms() {
       html += `</div>`;
     });
   } else {
-    Object.entries(groups).forEach(([cat, items]) => {
+    allAtomCats.forEach(cat => {
+      const items = groups[cat] || [];
       const custom = (compState.custom?.atoms || []).filter(c => c.cat === cat);
       const visible = items.filter(def => !compState.atoms?.[def.id]?.hidden);
       const done = visible.filter(i => compState.atoms?.[i.id]?.status === 'done').length + custom.filter(c => c.status === 'done').length;
