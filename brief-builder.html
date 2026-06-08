@@ -1084,7 +1084,12 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     <button class="tab" onclick="switchTab('blockers', this)">Blockers</button>
     <button class="tab" onclick="switchTab('decisions', this)">Decisions</button>
   </div>
-  <button class="copy-btn" style="margin-left:auto;padding:6px 16px;font-size:12px;border-radius:20px" onclick="openBrief()">Generate Brief →</button>
+  <div class="header-right">
+    <span id="nav-last-saved" style="font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap"></span>
+    <button class="sync-btn" id="btn-cloud-save" onclick="cloudSave()" title="Save your work to the cloud">☁ Save</button>
+    <button class="sync-btn" id="btn-cloud-load" onclick="cloudLoad()" title="Load the latest cloud save">☁ Load</button>
+    <button class="copy-btn" style="padding:6px 16px;font-size:12px;border-radius:20px" onclick="openBrief()">Generate Brief →</button>
+  </div>
 
 </div>
 
@@ -1205,6 +1210,13 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
       <p style="margin:0 0 10px;font-size:12px;color:var(--muted)">Send this link — they open it, type their name, and they're connected.</p>
       <button onclick="copyInviteLink()" style="padding:7px 14px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500">Copy invite link</button>
     </div>
+    <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm)">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-family:var(--mono)">Local Backup</p>
+      <div style="display:flex;gap:8px">
+        <button onclick="exportNotes();closeSyncSetup();" style="padding:7px 12px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text)">↓ Export file</button>
+        <label style="padding:7px 12px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text)">↑ Import file<input type="file" accept=".json" style="display:none" onchange="importNotes(this)"></label>
+      </div>
+    </div>
     <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
       <button onclick="closeSyncSetup()" style="padding:8px 16px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text)">Cancel</button>
       <button onclick="saveSetup()" style="padding:8px 16px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500">Save</button>
@@ -1216,13 +1228,8 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 <div class="site-footer">
   <span class="footer-name">Vast — Website Refresh Brief Builder</span>
   <div class="footer-sync">
-    <button class="sync-btn" id="btn-cloud-save" onclick="cloudSave()" title="Save your work to the cloud">☁ Save</button>
-    <button class="sync-btn" id="btn-cloud-load" onclick="cloudLoad()" title="Load the latest cloud save">☁ Load</button>
-    <button class="sync-btn" id="btn-cloud-setup" onclick="openSyncSetup()" title="Configure cloud sync">⚙</button>
-    <span id="sync-status" style="font-size:12px;color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-    <span style="color:var(--border);padding:0 2px">|</span>
-    <button class="sync-btn" onclick="exportNotes()" title="Download your notes as a file to share">↓ Export</button>
-    <label class="sync-btn" title="Load notes from a file someone shared with you">↑ Import<input type="file" accept=".json" style="display:none" onchange="importNotes(this)"></label>
+    <span id="sync-status" style="font-size:12px;color:var(--muted);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <button class="sync-btn" id="btn-cloud-setup" onclick="openSyncSetup()" title="Settings">⚙ Settings</button>
   </div>
 </div>
 
@@ -2203,6 +2210,10 @@ function _initCloudSync() {
   }
 
   _updateSyncUI();
+  try {
+    const ls = localStorage.getItem('vast-brief-last-saved');
+    if (ls) { const d = JSON.parse(ls); _setLastSaved(d.by, d.at); }
+  } catch {}
 }
 
 function _updateSyncUI() {
@@ -2223,6 +2234,15 @@ function _setSyncStatus(msg, isError) {
   el._t = setTimeout(() => { el.textContent = ''; }, 6000);
 }
 
+function _setLastSaved(by, at) {
+  const el = document.getElementById('nav-last-saved');
+  if (!el || !by) return;
+  const d = at ? new Date(at) : new Date();
+  const timeStr = d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  el.textContent = `Last saved by ${by} · ${timeStr}`;
+  localStorage.setItem('vast-brief-last-saved', JSON.stringify({ by, at: d.toISOString() }));
+}
+
 async function cloudSave() {
   if (!gistSync.isReady()) { openSyncSetup(); return; }
   const btn = document.getElementById('btn-cloud-save');
@@ -2230,10 +2250,12 @@ async function cloudSave() {
   const result = await gistSync.save();
   btn.disabled = false; btn.textContent = '☁ Save';
   if (result.ok) {
-    _setSyncStatus(`Saved ✓ by ${result.savedBy}`);
     if (result.isNew) {
-      _setSyncStatus('Cloud sync is live! Open ⚙ to copy your invite link for collaborators.');
+      _setSyncStatus('Cloud sync is live! Open ⚙ Settings to copy your invite link for collaborators.');
+    } else {
+      _setSyncStatus('Saved ✓');
     }
+    _setLastSaved(result.savedBy, new Date().toISOString());
   } else {
     _setSyncStatus(`Save failed: ${result.error}`, true);
   }
@@ -2250,8 +2272,8 @@ async function cloudLoad() {
   const result = await gistSync.load();
   btn.disabled = false; btn.textContent = '☁ Load';
   if (result.ok) {
-    const when = result.savedAt ? new Date(result.savedAt).toLocaleString() : '';
-    _setSyncStatus(`Loaded ✓ — last saved by ${result.savedBy}${when ? ' · ' + when : ''}`);
+    _setSyncStatus('Loaded ✓');
+    _setLastSaved(result.savedBy, result.savedAt);
   } else {
     _setSyncStatus(`Load failed: ${result.error}`, true);
   }
