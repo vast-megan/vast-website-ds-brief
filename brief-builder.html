@@ -2279,11 +2279,14 @@ async function cloudLoad() {
   }
 }
 
+let _syncFromInvite = false;
+
 function openSyncSetup(fromInvite = false) {
+  _syncFromInvite = fromInvite;
   const fullyConfigured = gistSync.isReady() && !!gistSync.gistId;
   document.getElementById('setup-modal-title').textContent = fromInvite ? "You've been invited!" : 'Cloud Sync Setup';
   document.getElementById('setup-modal-desc').textContent  = fromInvite
-    ? 'Just enter your name to finish setup.'
+    ? 'Just enter your name — your latest data will load automatically.'
     : 'Done once per device. Get the token from Megan.';
   document.getElementById('setup-token-row').style.display  = fromInvite ? 'none' : '';
   document.getElementById('setup-gist-row').style.display   = fromInvite ? 'none' : '';
@@ -2314,7 +2317,12 @@ function saveSetup() {
   gistSync.configure({ userName: name, token, gistId });
   closeSyncSetup();
   _updateSyncUI();
-  _setSyncStatus(`Setup saved for ${name} ✓`);
+  if (_syncFromInvite) {
+    _setSyncStatus(`Welcome ${name}! Loading latest data…`);
+    cloudLoad();
+  } else {
+    _setSyncStatus(`Setup saved for ${name} ✓`);
+  }
 }
 
 // ─────────────────────────────────────────────
