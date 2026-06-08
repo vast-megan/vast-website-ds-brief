@@ -38,26 +38,34 @@ The tool is being expanded from a single-purpose audit tool into a full project 
 
 ---
 
-## Export / Import Workflow (for collaborating with James)
-1. Both open the live URL independently in their own browser
-2. Each fills in decisions and notes separately
-3. James clicks **↓ Export** → types his name → downloads a zip file named `vast-website-ds-brief-notes-james-[date].zip`
-4. James sends the zip to Megan
-5. Megan clicks **↑ Import** → selects the JSON inside the zip → his notes merge into hers
-6. If both left notes on the same item, both versions are kept with James's name prepended
-7. Megan synthesizes and that becomes the final brief
+## Collaboration Workflow (GitHub Gist Cloud Sync — June 2026)
 
-**What the export file contains (as of June 2026):**
-- `state` — all audit feedback decisions and notes
-- `compState` — all component notes, variants, statuses (organisms/molecules/atoms, including custom items)
-- `blockerState` — all blocker answers
+The tool uses GitHub Gist as a shared cloud save. Sync happens via **☁ Save** and **☁ Load** buttons in the footer.
 
-**Import merge behavior:**
+**First-time setup per device (~2 min):**
+1. Open the live URL
+2. Click **⚙** in the footer → Setup modal appears
+3. Enter your name + the shared GitHub token (get from Megan)
+4. Gist ID field: leave blank on Megan's first setup; paste the Gist ID on all other devices
+
+**Megan's first save:**
+- Click ☁ Save — a Gist is created automatically
+- A dialog shows the Gist ID — copy it and share with collaborators along with the token
+
+**How it works day-to-day:**
+1. Open the live URL on any device
+2. Click ☁ Load to pull the latest cloud state
+3. Make changes
+4. Click ☁ Save to push your changes back up
+
+**Merge behavior (same as before):**
 - Audit decisions: merged (both notes kept if different, author name prepended)
 - Components: imported fills gaps only — existing local data wins conflicts
 - Blockers: imported only if local blockers are all empty
 
-**Important:** The export captures data from the browser you're on. The live site (`vast-megan.github.io`) and a locally opened file (`file://`) have completely separate storage — always export from the live URL.
+**ZIP export/import still works** as a fallback if needed.
+
+**Reusable module:** The sync logic lives in `cloud-sync.js` (repo root). Future tools copy this file and add `<script src="cloud-sync.js">` — no Gist logic to rewrite.
 
 ---
 

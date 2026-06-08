@@ -1070,6 +1070,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="cloud-sync.js"></script>
 </head>
 <body>
 
@@ -1178,10 +1179,48 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   </div>
 </div>
 
+<!-- Cloud sync setup modal -->
+<div id="sync-setup-modal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.45);align-items:center;justify-content:center" onclick="if(event.target===this)closeSyncSetup()">
+  <div style="background:var(--surface);border-radius:var(--radius);max-width:440px;width:90%;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,0.18)">
+    <h3 id="setup-modal-title" style="margin:0 0 4px;font-size:16px;font-weight:600">Cloud Sync Setup</h3>
+    <p id="setup-modal-desc" style="margin:0 0 20px;font-size:13px;color:var(--muted)">Done once per device. Get the token from Megan.</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500">Your name
+        <input id="setup-name" type="text" placeholder="e.g. James" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text)">
+      </label>
+      <div id="setup-token-row">
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500">GitHub Token
+          <input id="setup-token" type="text" placeholder="ghp_..." style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--mono);background:var(--surface);color:var(--text)">
+        </label>
+      </div>
+      <div id="setup-gist-row">
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500">
+          Gist ID <span style="font-weight:400;color:var(--muted)">(leave blank the very first time)</span>
+          <input id="setup-gist-id" type="text" placeholder="shown after first save — paste here on other devices" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--mono);background:var(--surface);color:var(--text)">
+        </label>
+      </div>
+    </div>
+    <div id="setup-invite-row" style="display:none;margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm)">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:500">Share with collaborators</p>
+      <p style="margin:0 0 10px;font-size:12px;color:var(--muted)">Send this link — they open it, type their name, and they're connected.</p>
+      <button onclick="copyInviteLink()" style="padding:7px 14px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500">Copy invite link</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button onclick="closeSyncSetup()" style="padding:8px 16px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text)">Cancel</button>
+      <button onclick="saveSetup()" style="padding:8px 16px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Footer -->
 <div class="site-footer">
   <span class="footer-name">Vast — Website Refresh Brief Builder</span>
   <div class="footer-sync">
+    <button class="sync-btn" id="btn-cloud-save" onclick="cloudSave()" title="Save your work to the cloud">☁ Save</button>
+    <button class="sync-btn" id="btn-cloud-load" onclick="cloudLoad()" title="Load the latest cloud save">☁ Load</button>
+    <button class="sync-btn" id="btn-cloud-setup" onclick="openSyncSetup()" title="Configure cloud sync">⚙</button>
+    <span id="sync-status" style="font-size:12px;color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    <span style="color:var(--border);padding:0 2px">|</span>
     <button class="sync-btn" onclick="exportNotes()" title="Download your notes as a file to share">↓ Export</button>
     <label class="sync-btn" title="Load notes from a file someone shared with you">↑ Import<input type="file" accept=".json" style="display:none" onchange="importNotes(this)"></label>
   </div>
@@ -1706,9 +1745,11 @@ function renderBrief() {
   t += `Status: Re-engaging Antinomy after internal alignment\n\n`;
 
   // ── ORGANISMS ──
-  function writeOrg(name, notes, variants, cat) {
+  function writeOrg(name, notes, variants, cat, doText, dontText) {
     let block = `• ${name}${cat ? ` [${cat}]` : ''}\n`;
     if (notes?.trim()) block += `  Notes: ${notes.trim()}\n`;
+    if (doText?.trim()) block += `  Do: ${doText.trim()}\n`;
+    if (dontText?.trim()) block += `  Don't: ${dontText.trim()}\n`;
     const filled = (variants || []).filter(v => v.name?.trim());
     if (filled.length > 0) {
       block += `  Variants:\n`;
@@ -1726,7 +1767,7 @@ function renderBrief() {
     ORGANISMS_DATA.forEach(def => {
       const d = compState.organisms?.[def.id];
       if (!d) return;
-      const entry = { name: d.customName || def.name, notes: d.notes, variants: d.variants, cat: d.customCat || def.cat };
+      const entry = { name: d.customName || def.name, notes: d.notes, do: d.do, dont: d.dont, variants: d.variants, cat: d.customCat || def.cat };
       if (d.status === 'done') readyOrgs.push(entry);
       else if (d.status === 'progress') progressOrgs.push(entry);
       else if (d.status === 'deferred') deferredOrgs.push(entry);
@@ -1744,16 +1785,16 @@ function renderBrief() {
     t += `${line}\n`;
     t += `ORGANISMS — READY (${totalReady})\n`;
     t += `${line}\n\n`;
-    readyOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
-    customReady.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
+    readyOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat, o.do, o.dont); });
+    customReady.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat, o.do, o.dont); });
   }
 
   if (progressOrgs.length + customProgress.length > 0) {
     t += `${line}\n`;
     t += `ORGANISMS — IN PROGRESS\n`;
     t += `${line}\n\n`;
-    progressOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
-    customProgress.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat); });
+    progressOrgs.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat, o.do, o.dont); });
+    customProgress.forEach(o => { t += writeOrg(o.name, o.notes, o.variants, o.cat, o.do, o.dont); });
   }
 
   if (totalDeferred > 0) {
@@ -1763,8 +1804,90 @@ function renderBrief() {
     [...deferredOrgs, ...customDeferred].forEach(o => {
       t += `• ${o.name}\n`;
       if (o.notes?.trim()) t += `  Notes: ${o.notes.trim()}\n`;
+      if (o.do?.trim()) t += `  Do: ${o.do.trim()}\n`;
+      if (o.dont?.trim()) t += `  Don't: ${o.dont.trim()}\n`;
       t += `\n`;
     });
+  }
+
+  // ── MOLECULES ──
+  function writeComp(name, notes, cat, doText, dontText) {
+    let block = `• ${name}${cat ? ` [${cat}]` : ''}\n`;
+    if (notes?.trim()) block += `  Notes: ${notes.trim()}\n`;
+    if (doText?.trim()) block += `  Do: ${doText.trim()}\n`;
+    if (dontText?.trim()) block += `  Don't: ${dontText.trim()}\n`;
+    return block + '\n';
+  }
+
+  if (typeof MOLECULES_DATA !== 'undefined') {
+    const molReady = [], molProgress = [], molDeferred = [];
+    MOLECULES_DATA.forEach(def => {
+      const d = compState.molecules?.[def.id];
+      if (!d) return;
+      const entry = { name: d.customName || def.name, notes: d.notes, do: d.do, dont: d.dont, cat: d.customCat || def.cat };
+      if (d.status === 'done') molReady.push(entry);
+      else if (d.status === 'progress') molProgress.push(entry);
+      else if (d.status === 'deferred') molDeferred.push(entry);
+    });
+    const molCustomAll = compState.custom?.molecules || [];
+    const molCustomReady    = molCustomAll.filter(c => c.status === 'done');
+    const molCustomProgress = molCustomAll.filter(c => c.status === 'progress');
+    const molCustomDeferred = molCustomAll.filter(c => c.status === 'deferred');
+
+    if (molReady.length + molCustomReady.length > 0) {
+      t += `${line}\n`;
+      t += `MOLECULES — READY (${molReady.length + molCustomReady.length})\n`;
+      t += `${line}\n\n`;
+      [...molReady, ...molCustomReady].forEach(m => { t += writeComp(m.name, m.notes, m.cat, m.do, m.dont); });
+    }
+    if (molProgress.length + molCustomProgress.length > 0) {
+      t += `${line}\n`;
+      t += `MOLECULES — IN PROGRESS\n`;
+      t += `${line}\n\n`;
+      [...molProgress, ...molCustomProgress].forEach(m => { t += writeComp(m.name, m.notes, m.cat, m.do, m.dont); });
+    }
+    if (molDeferred.length + molCustomDeferred.length > 0) {
+      t += `${line}\n`;
+      t += `MOLECULES — DEFERRED\n`;
+      t += `${line}\n\n`;
+      [...molDeferred, ...molCustomDeferred].forEach(m => { t += writeComp(m.name, m.notes, m.cat, m.do, m.dont); });
+    }
+  }
+
+  // ── ATOMS ──
+  if (typeof ATOMS_DATA !== 'undefined') {
+    const atmReady = [], atmProgress = [], atmDeferred = [];
+    ATOMS_DATA.forEach(def => {
+      const d = compState.atoms?.[def.id];
+      if (!d) return;
+      const entry = { name: d.customName || def.name, notes: d.notes, do: d.do, dont: d.dont, cat: d.customCat || def.cat };
+      if (d.status === 'done') atmReady.push(entry);
+      else if (d.status === 'progress') atmProgress.push(entry);
+      else if (d.status === 'deferred') atmDeferred.push(entry);
+    });
+    const atmCustomAll = compState.custom?.atoms || [];
+    const atmCustomReady    = atmCustomAll.filter(c => c.status === 'done');
+    const atmCustomProgress = atmCustomAll.filter(c => c.status === 'progress');
+    const atmCustomDeferred = atmCustomAll.filter(c => c.status === 'deferred');
+
+    if (atmReady.length + atmCustomReady.length > 0) {
+      t += `${line}\n`;
+      t += `ATOMS — READY (${atmReady.length + atmCustomReady.length})\n`;
+      t += `${line}\n\n`;
+      [...atmReady, ...atmCustomReady].forEach(a => { t += writeComp(a.name, a.notes, a.cat, a.do, a.dont); });
+    }
+    if (atmProgress.length + atmCustomProgress.length > 0) {
+      t += `${line}\n`;
+      t += `ATOMS — IN PROGRESS\n`;
+      t += `${line}\n\n`;
+      [...atmProgress, ...atmCustomProgress].forEach(a => { t += writeComp(a.name, a.notes, a.cat, a.do, a.dont); });
+    }
+    if (atmDeferred.length + atmCustomDeferred.length > 0) {
+      t += `${line}\n`;
+      t += `ATOMS — DEFERRED\n`;
+      t += `${line}\n\n`;
+      [...atmDeferred, ...atmCustomDeferred].forEach(a => { t += writeComp(a.name, a.notes, a.cat, a.do, a.dont); });
+    }
   }
 
   // ── AUDIT DECISIONS (if any made) ──
@@ -1978,6 +2101,63 @@ function exportNotes() {
   });
 }
 
+function _mergePayload(payload) {
+  const author = payload.author || payload.savedBy || 'Someone';
+
+  // Merge audit decisions — both notes kept if different
+  Object.entries(payload.state || {}).forEach(([id, data]) => {
+    if (!state[id]) state[id] = {};
+    if (!state[id].decision && data.decision) state[id].decision = data.decision;
+    if (data.notes && !state[id].notes) state[id].notes = data.notes;
+    else if (data.notes && state[id].notes && data.notes !== state[id].notes) {
+      state[id].notes = state[id].notes + '\n\n' + author + ': ' + data.notes;
+    }
+  });
+  save();
+
+  // Merge component state — imported fills gaps only, existing data wins
+  if (payload.compState) {
+    const importedOrgs = payload.compState.organisms || {};
+    if (!compState.organisms) compState.organisms = {};
+    Object.entries(importedOrgs).forEach(([id, data]) => {
+      if (!compState.organisms[id]) compState.organisms[id] = data;
+    });
+    if (payload.compState.custom) {
+      if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
+      ['organisms','molecules','atoms'].forEach(tier => {
+        const imported = payload.compState.custom[tier] || [];
+        const existing = compState.custom[tier] || [];
+        const existingIds = new Set(existing.map(c => c.id));
+        imported.forEach(c => { if (!existingIds.has(c.id)) existing.push(c); });
+        compState.custom[tier] = existing;
+      });
+    }
+    ['molecules','atoms'].forEach(tier => {
+      const importedTier = payload.compState[tier] || {};
+      if (!compState[tier]) compState[tier] = {};
+      Object.entries(importedTier).forEach(([id, data]) => {
+        if (!compState[tier][id]) compState[tier][id] = data;
+      });
+    });
+    saveComp();
+  }
+
+  // Restore blocker state only if local is completely empty
+  if (payload.blockerState && (!blockerState || blockerState.every(b => !b.answer && !b.resolved))) {
+    blockerState.forEach((b, i) => {
+      if (payload.blockerState[i]) {
+        b.answer   = payload.blockerState[i].answer   || '';
+        b.resolved = payload.blockerState[i].resolved || false;
+      }
+    });
+    saveBlockers();
+  }
+
+  refresh();
+  renderCompTab();
+  if (activeTab === 'decisions') renderDecisionsSummary();
+}
+
 function importNotes(input) {
   const file = input.files[0];
   if (!file) return;
@@ -1986,67 +2166,12 @@ function importNotes(input) {
     try {
       const payload = JSON.parse(e.target.result);
       if (!payload.state && !payload.compState) throw new Error('Invalid file');
-      const author = payload.author || 'Someone';
+      const author    = payload.author || 'Someone';
       const auditCount = Object.keys(payload.state || {}).length;
-      const compCount = Object.keys((payload.compState || {}).organisms || {}).length
+      const compCount  = Object.keys((payload.compState || {}).organisms || {}).length
         + ((payload.compState?.custom?.organisms || []).length);
       if (!confirm(`Import from ${author}?\n\n• ${auditCount} audit decisions\n• ${compCount} component entries\n\nAudit notes will be merged (both kept if different). Component and blocker data will be restored from this file.`)) return;
-
-      // Merge audit decisions
-      Object.entries(payload.state || {}).forEach(([id, data]) => {
-        if (!state[id]) state[id] = {};
-        if (!state[id].decision && data.decision) state[id].decision = data.decision;
-        if (data.notes && !state[id].notes) state[id].notes = data.notes;
-        else if (data.notes && state[id].notes && data.notes !== state[id].notes) {
-          state[id].notes = state[id].notes + '\n\n' + author + ': ' + data.notes;
-        }
-      });
-      save();
-
-      // Restore component state
-      if (payload.compState) {
-        // Merge organisms — imported fills in any gaps, existing data wins conflicts
-        const importedOrgs = payload.compState.organisms || {};
-        if (!compState.organisms) compState.organisms = {};
-        Object.entries(importedOrgs).forEach(([id, data]) => {
-          if (!compState.organisms[id]) compState.organisms[id] = data;
-        });
-        // Restore custom items if local has none
-        if (payload.compState.custom) {
-          if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms: [] };
-          ['organisms','molecules','atoms'].forEach(tier => {
-            const imported = payload.compState.custom[tier] || [];
-            const existing = compState.custom[tier] || [];
-            const existingIds = new Set(existing.map(c => c.id));
-            imported.forEach(c => { if (!existingIds.has(c.id)) existing.push(c); });
-            compState.custom[tier] = existing;
-          });
-        }
-        // Merge molecules and atoms the same way
-        ['molecules','atoms'].forEach(tier => {
-          const importedTier = payload.compState[tier] || {};
-          if (!compState[tier]) compState[tier] = {};
-          Object.entries(importedTier).forEach(([id, data]) => {
-            if (!compState[tier][id]) compState[tier][id] = data;
-          });
-        });
-        saveComp();
-      }
-
-      // Restore blocker state if local is empty
-      if (payload.blockerState && (!blockerState || blockerState.every(b => !b.answer && !b.resolved))) {
-        blockerState.forEach((b, i) => {
-          if (payload.blockerState[i]) {
-            b.answer = payload.blockerState[i].answer || '';
-            b.resolved = payload.blockerState[i].resolved || false;
-          }
-        });
-        saveBlockers();
-      }
-
-      refresh();
-      renderCompTab();
-      if (activeTab === 'decisions') renderDecisionsSummary();
+      _mergePayload(payload);
       alert(`Imported from ${author}.`);
     } catch {
       alert('Could not read that file — make sure it\'s a notes file exported from this tool.');
@@ -2054,6 +2179,120 @@ function importNotes(input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+// ─────────────────────────────────────────────
+// CLOUD SYNC
+// ─────────────────────────────────────────────
+let gistSync;
+
+function _initCloudSync() {
+  gistSync = new GistSync({
+    appId:   'vast-brief',
+    getData: () => ({ state, compState, blockerState }),
+    setData: (payload) => _mergePayload(payload)
+  });
+
+  // If someone opened an invite link, silently apply token+gistId and ask only for name
+  const invite = GistSync.parseInviteFromHash();
+  if (invite) {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    gistSync.configure({ token: invite.token, gistId: invite.gistId });
+    openSyncSetup(true);
+    return;
+  }
+
+  _updateSyncUI();
+}
+
+function _updateSyncUI() {
+  const setupBtn = document.getElementById('btn-cloud-setup');
+  if (!setupBtn) return;
+  setupBtn.title = gistSync.isReady()
+    ? `Connected as ${gistSync.userName} — click to change setup`
+    : 'Setup required — click to configure';
+  setupBtn.style.opacity = gistSync.isReady() ? '1' : '0.5';
+}
+
+function _setSyncStatus(msg, isError) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? '#c53030' : 'var(--muted)';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.textContent = ''; }, 6000);
+}
+
+async function cloudSave() {
+  if (!gistSync.isReady()) { openSyncSetup(); return; }
+  const btn = document.getElementById('btn-cloud-save');
+  btn.disabled = true; btn.textContent = '☁ Saving…';
+  const result = await gistSync.save();
+  btn.disabled = false; btn.textContent = '☁ Save';
+  if (result.ok) {
+    _setSyncStatus(`Saved ✓ by ${result.savedBy}`);
+    if (result.isNew) {
+      _setSyncStatus('Cloud sync is live! Open ⚙ to copy your invite link for collaborators.');
+    }
+  } else {
+    _setSyncStatus(`Save failed: ${result.error}`, true);
+  }
+}
+
+async function cloudLoad() {
+  if (!gistSync.isReady()) { openSyncSetup(); return; }
+  if (!gistSync.gistId) {
+    alert('No cloud save connected yet.\n\nSave first from this device, or enter a Gist ID in Setup.');
+    return;
+  }
+  const btn = document.getElementById('btn-cloud-load');
+  btn.disabled = true; btn.textContent = '☁ Loading…';
+  const result = await gistSync.load();
+  btn.disabled = false; btn.textContent = '☁ Load';
+  if (result.ok) {
+    const when = result.savedAt ? new Date(result.savedAt).toLocaleString() : '';
+    _setSyncStatus(`Loaded ✓ — last saved by ${result.savedBy}${when ? ' · ' + when : ''}`);
+  } else {
+    _setSyncStatus(`Load failed: ${result.error}`, true);
+  }
+}
+
+function openSyncSetup(fromInvite = false) {
+  const fullyConfigured = gistSync.isReady() && !!gistSync.gistId;
+  document.getElementById('setup-modal-title').textContent = fromInvite ? "You've been invited!" : 'Cloud Sync Setup';
+  document.getElementById('setup-modal-desc').textContent  = fromInvite
+    ? 'Just enter your name to finish setup.'
+    : 'Done once per device. Get the token from Megan.';
+  document.getElementById('setup-token-row').style.display  = fromInvite ? 'none' : '';
+  document.getElementById('setup-gist-row').style.display   = fromInvite ? 'none' : '';
+  document.getElementById('setup-invite-row').style.display = (fullyConfigured && !fromInvite) ? '' : 'none';
+  document.getElementById('setup-name').value    = gistSync.userName || '';
+  document.getElementById('setup-token').value   = gistSync.token    || '';
+  document.getElementById('setup-gist-id').value = gistSync.gistId   || '';
+  document.getElementById('sync-setup-modal').style.display = 'flex';
+}
+
+function copyInviteLink() {
+  const link = gistSync.generateInviteLink();
+  if (!link) { alert('Save to cloud first to generate an invite link.'); return; }
+  navigator.clipboard.writeText(link)
+    .then(() => { _setSyncStatus('Invite link copied ✓ — send it to collaborators'); closeSyncSetup(); })
+    .catch(() => { prompt('Copy this link and send to collaborators:', link); });
+}
+
+function closeSyncSetup() {
+  document.getElementById('sync-setup-modal').style.display = 'none';
+}
+
+function saveSetup() {
+  const name   = document.getElementById('setup-name').value.trim();
+  const token  = document.getElementById('setup-token').value.trim();
+  const gistId = document.getElementById('setup-gist-id').value.trim();
+  if (!name || !token) { alert('Name and token are both required.'); return; }
+  gistSync.configure({ userName: name, token, gistId });
+  closeSyncSetup();
+  _updateSyncUI();
+  _setSyncStatus(`Setup saved for ${name} ✓`);
 }
 
 // ─────────────────────────────────────────────
@@ -2798,10 +3037,12 @@ function openGridModal(tier, id) {
     const notesRo = data.notes
       ? `<div class="notes-label" style="margin-top:${typesHtml ? '4px' : '14px'}">Notes</div><p class="ro-text">${escH(data.notes)}</p>`
       : `<span class="ro-empty">No notes added yet.</span>`;
+    const doRo   = data.do   ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(data.do)}</p>` : '';
+    const dontRo = data.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(data.dont)}</p>` : '';
     const variantsRo = data.variants
       ? `<div class="notes-label" style="margin-top:12px">Variants (${data.variants.length})</div>${data.variants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}`
       : '';
-    modalBody = `${typesHtml}${notesRo}${variantsRo}
+    modalBody = `${typesHtml}${notesRo}${doRo}${dontRo}${variantsRo}
       <div class="comp-card-actions" style="margin-top:16px">
         <button class="comp-unmark-btn" onclick="setCompStatus('${tier}','${id}','todo');_closeModal()">${data.status === 'deferred' ? 'Restore' : 'Unmark'}</button>
         <button class="comp-mark-btn" onclick="toggleEditModeModal('${tier}','${id}')">Edit</button>
@@ -2810,6 +3051,10 @@ function openGridModal(tier, id) {
     modalBody = `${typesHtml}
       <div class="notes-label" style="margin-top:${typesHtml ? '0' : '4px'}">Notes</div>
       <textarea class="notes-input" style="min-height:80px" placeholder="Describe this component…" oninput="updateModalNotes('${tier}','${id}',this.value)">${escH(data.notes || '')}</textarea>
+      <div class="notes-label">Do</div>
+      <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do…" oninput="updateModalDo('${tier}','${id}',this.value)">${escH(data.do || '')}</textarea>
+      <div class="notes-label">Don't</div>
+      <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid…" oninput="updateModalDont('${tier}','${id}',this.value)">${escH(data.dont || '')}</textarea>
       ${variantsHtml}
       <div class="comp-card-actions" style="margin-top:16px">
         ${actionsHtml(tier, id, data.status, tier.startsWith('custom'))}
@@ -3026,35 +3271,35 @@ if (!compState.custom) compState.custom = { organisms: [], molecules: [], atoms:
 function getOrgData(id) {
   const def = ORGANISMS_DATA.find(o => o.id === id);
   const saved = compState.organisms?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})), customName: saved.customName || '', customCat: saved.customCat || '' };
+  return { ...def, notes: saved.notes || '', do: saved.do || '', dont: saved.dont || '', status: saved.status || 'todo', variants: saved.variants || def.variants.map(v => ({...v})), customName: saved.customName || '', customCat: saved.customCat || '' };
 }
 function getMolData(id) {
   const def = MOLECULES_DATA.find(m => m.id === id);
   const saved = compState.molecules?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '', customCat: saved.customCat || '' };
+  return { ...def, notes: saved.notes || '', do: saved.do || '', dont: saved.dont || '', status: saved.status || 'todo', customName: saved.customName || '', customCat: saved.customCat || '' };
 }
 function getAtomData(id) {
   const def = ATOMS_DATA.find(a => a.id === id);
   const saved = compState.atoms?.[id] || {};
-  return { ...def, notes: saved.notes || '', status: saved.status || 'todo', customName: saved.customName || '', customCat: saved.customCat || '' };
+  return { ...def, notes: saved.notes || '', do: saved.do || '', dont: saved.dont || '', status: saved.status || 'todo', customName: saved.customName || '', customCat: saved.customCat || '' };
 }
 
 function ensureOrg(id) {
   if (!compState.organisms) compState.organisms = {};
   if (!compState.organisms[id]) {
     const def = ORGANISMS_DATA.find(o => o.id === id);
-    compState.organisms[id] = { notes: '', status: 'todo', variants: def.variants.map(v => ({...v})) };
+    compState.organisms[id] = { notes: '', do: '', dont: '', status: 'todo', variants: def.variants.map(v => ({...v})) };
   }
   return compState.organisms[id];
 }
 function ensureMol(id) {
   if (!compState.molecules) compState.molecules = {};
-  if (!compState.molecules[id]) compState.molecules[id] = { notes: '', status: 'todo' };
+  if (!compState.molecules[id]) compState.molecules[id] = { notes: '', do: '', dont: '', status: 'todo' };
   return compState.molecules[id];
 }
 function ensureAtom(id) {
   if (!compState.atoms) compState.atoms = {};
-  if (!compState.atoms[id]) compState.atoms[id] = { notes: '', status: 'todo' };
+  if (!compState.atoms[id]) compState.atoms[id] = { notes: '', do: '', dont: '', status: 'todo' };
   return compState.atoms[id];
 }
 
@@ -3213,6 +3458,8 @@ function renderOrganisms() {
         const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
         const bodyHtml = ro
           ? `${d.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${d.do ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(d.do)}</p>` : ''}
+             ${d.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(d.dont)}</p>` : ''}
              ${d.variants.length ? `<div class="notes-label" style="margin-top:12px">Variants (${d.variants.length})</div>${d.variants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('org','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
@@ -3221,6 +3468,10 @@ function renderOrganisms() {
              <input class="variant-name-input" type="text" value="${escH(d.customCat || def.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateOrgCat('${def.id}', this.value)">
              <div class="notes-label">Component Notes</div>
              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior, Vast-specific constraints…" oninput="updateOrgNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+             <div class="notes-label">Do</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do for this component…" oninput="updateOrgDo('${def.id}', this.value)">${escH(d.do)}</textarea>
+             <div class="notes-label">Don't</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid for this component…" oninput="updateOrgDont('${def.id}', this.value)">${escH(d.dont)}</textarea>
              <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${d.variants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addVariant('${def.id}')">+</button><button class="variant-btn" onclick="removeVariant('${def.id}')">−</button></div></div>
              ${d.variants.map((v, i) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${i + 1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateVariantName('${def.id}', ${i}, this.value)"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateVariantNotes('${def.id}', ${i}, this.value)">${escH(v.notes)}</textarea></div>`).join('')}
              <div class="comp-card-actions">${actionsHtml('org', def.id, d.status, false)}</div>`;
@@ -3241,6 +3492,8 @@ function renderOrganisms() {
         const cVariants = c.variants || [];
         const bodyHtml = ro
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${c.do ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(c.do)}</p>` : ''}
+             ${c.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(c.dont)}</p>` : ''}
              ${cVariants.filter(v=>v.name?.trim()).length ? `<div class="notes-label" style="margin-top:12px">Variants (${cVariants.filter(v=>v.name?.trim()).length})</div>${cVariants.map((v,vi) => `<div class="ro-variant"><span class="variant-num">${vi+1}</span><div class="ro-variant-wrap"><strong>${escH(v.name||'Unnamed')}</strong>${v.notes?`<div class="ro-variant-notes">${escH(v.notes)}</div>`:''}</div></div>`).join('')}` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-org','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
@@ -3249,6 +3502,10 @@ function renderOrganisms() {
              <input class="variant-name-input" type="text" value="${escH(c.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateCustomCat('organisms','${c.id}',this.value)">
              <div class="notes-label">Component Notes</div>
              <textarea class="notes-input" placeholder="Describe this component — purpose, rules, visual behavior…" oninput="updateCustomNotes('organisms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="notes-label">Do</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do for this component…" oninput="updateCustomDo('organisms','${c.id}',this.value)">${escH(c.do||'')}</textarea>
+             <div class="notes-label">Don't</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid for this component…" oninput="updateCustomDont('organisms','${c.id}',this.value)">${escH(c.dont||'')}</textarea>
              <div class="variants-header"><div class="notes-label" style="margin:0">Variants (${cVariants.length})</div><div class="variant-controls"><button class="variant-btn" onclick="addCustomVariant('organisms','${c.id}')">+</button><button class="variant-btn" onclick="removeCustomVariant('organisms','${c.id}')">−</button></div></div>
              ${cVariants.map((v, i) => `<div class="variant-item"><div class="variant-name-row"><span class="variant-num">${i + 1}</span><input class="variant-name-input" type="text" value="${escH(v.name)}" placeholder="Variant name" oninput="updateCustomVariantName('organisms','${c.id}', ${i}, this.value)"></div><textarea class="notes-input" style="min-height:52px" placeholder="Notes for this variant…" oninput="updateCustomVariantNotes('organisms','${c.id}', ${i}, this.value)">${escH(v.notes)}</textarea></div>`).join('')}
              <div class="comp-card-actions">${actionsHtml('custom-org', c.id, c.status, true)}</div>`;
@@ -3306,6 +3563,8 @@ function renderMolecules() {
           ? `<div class="notes-label" style="margin-top:14px">Types / States</div>
              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
              ${d.notes ? `<div class="notes-label" style="margin-top:4px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${d.do ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(d.do)}</p>` : ''}
+             ${d.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(d.dont)}</p>` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('mol','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateMolName('${def.id}', this.value)">
@@ -3315,6 +3574,10 @@ function renderMolecules() {
              <div class="type-chips">${def.types.map(t => `<span class="type-chip">${escH(t)}</span>`).join('')}</div>
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" style="min-height:64px" placeholder="Types, states, rules, visual constraints…" oninput="updateMolNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+             <div class="notes-label">Do</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do for this component…" oninput="updateMolDo('${def.id}', this.value)">${escH(d.do)}</textarea>
+             <div class="notes-label">Don't</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid for this component…" oninput="updateMolDont('${def.id}', this.value)">${escH(d.dont)}</textarea>
              <div class="comp-card-actions">${actionsHtml('mol', def.id, d.status, false)}</div>`;
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
@@ -3332,6 +3595,8 @@ function renderMolecules() {
         const ro = (c.status === 'done' || c.status === 'deferred') && !isEditing;
         const bodyHtml = ro
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${c.do ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(c.do)}</p>` : ''}
+             ${c.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(c.dont)}</p>` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-mol','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateCustomName('molecules','${c.id}',this.value)">
@@ -3339,6 +3604,10 @@ function renderMolecules() {
              <input class="variant-name-input" type="text" value="${escH(c.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateCustomCat('molecules','${c.id}',this.value)">
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" placeholder="Describe this component…" oninput="updateCustomNotes('molecules','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="notes-label">Do</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do for this component…" oninput="updateCustomDo('molecules','${c.id}',this.value)">${escH(c.do||'')}</textarea>
+             <div class="notes-label">Don't</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid for this component…" oninput="updateCustomDont('molecules','${c.id}',this.value)">${escH(c.dont||'')}</textarea>
              <div class="comp-card-actions">${actionsHtml('custom-mol', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
@@ -3392,6 +3661,8 @@ function renderAtoms() {
         const ro = (d.status === 'done' || d.status === 'deferred') && !isEditing;
         const bodyHtml = ro
           ? `${d.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(d.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${d.do ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(d.do)}</p>` : ''}
+             ${d.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(d.dont)}</p>` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('atom','${def.id}','todo')">${d.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${def.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(displayName)}" style="width:100%;margin-bottom:14px" placeholder="Component name" oninput="updateAtomName('${def.id}', this.value)">
@@ -3399,6 +3670,10 @@ function renderAtoms() {
              <input class="variant-name-input" type="text" value="${escH(d.customCat || def.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateAtomCat('${def.id}', this.value)">
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" style="min-height:56px" placeholder="Values, rules, decisions, constraints…" oninput="updateAtomNotes('${def.id}', this.value)">${escH(d.notes)}</textarea>
+             <div class="notes-label">Do</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do for this token/element…" oninput="updateAtomDo('${def.id}', this.value)">${escH(d.do)}</textarea>
+             <div class="notes-label">Don't</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid for this token/element…" oninput="updateAtomDont('${def.id}', this.value)">${escH(d.dont)}</textarea>
              <div class="comp-card-actions">${actionsHtml('atom', def.id, d.status, false)}</div>`;
         html += `
           <div class="comp-card ${isOpen ? 'open' : ''} ${d.status === 'deferred' ? 'deferred' : ''}" id="cc-${def.id}">
@@ -3416,6 +3691,8 @@ function renderAtoms() {
         const ro = (c.status === 'done' || c.status === 'deferred') && !isEditing;
         const bodyHtml = ro
           ? `${c.notes ? `<div class="notes-label" style="margin-top:14px">Notes</div><p class="ro-text">${escH(c.notes)}</p>` : '<span class="ro-empty">No notes added yet.</span>'}
+             ${c.do ? `<div class="notes-label" style="margin-top:12px">Do</div><p class="ro-text">${escH(c.do)}</p>` : ''}
+             ${c.dont ? `<div class="notes-label" style="margin-top:12px">Don't</div><p class="ro-text">${escH(c.dont)}</p>` : ''}
              <div class="comp-card-actions"><button class="comp-unmark-btn" onclick="setCompStatus('custom-atom','${c.id}','todo')">${c.status === 'deferred' ? 'Restore' : 'Unmark'}</button><button class="comp-mark-btn" onclick="toggleEditMode('${c.id}')">Edit</button></div>`
           : `<div class="notes-label" style="margin-top:14px">Name</div>
              <input class="variant-name-input" type="text" value="${escH(c.name)}" style="width:100%;margin-bottom:14px" placeholder="Token / element name" oninput="updateCustomName('atoms','${c.id}',this.value)">
@@ -3423,6 +3700,10 @@ function renderAtoms() {
              <input class="variant-name-input" type="text" value="${escH(c.cat)}" style="width:100%;margin-bottom:14px" placeholder="Section name" oninput="updateCustomCat('atoms','${c.id}',this.value)">
              <div class="notes-label">Notes</div>
              <textarea class="notes-input" placeholder="Describe this element…" oninput="updateCustomNotes('atoms','${c.id}',this.value)">${escH(c.notes)}</textarea>
+             <div class="notes-label">Do</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What Antinomy should do for this token/element…" oninput="updateCustomDo('atoms','${c.id}',this.value)">${escH(c.do||'')}</textarea>
+             <div class="notes-label">Don't</div>
+             <textarea class="notes-input" style="min-height:52px" placeholder="What to avoid for this token/element…" oninput="updateCustomDont('atoms','${c.id}',this.value)">${escH(c.dont||'')}</textarea>
              <div class="comp-card-actions">${actionsHtml('custom-atom', c.id, c.status, true)}</div>`;
         html += `
           <div class="comp-card custom-item ${isOpen ? 'open' : ''} ${c.status === 'deferred' ? 'deferred' : ''}" id="cc-${c.id}">
@@ -3474,6 +3755,26 @@ function updateAtomNotes(id, value) {
   atom.notes = value;
   if (atom.status === 'todo' && value.trim()) { atom.status = 'progress'; updateStatusUI(id, 'progress'); }
   saveComp();
+}
+function updateOrgDo(id, value) { const org = ensureOrg(id); org.do = value; saveComp(); }
+function updateOrgDont(id, value) { const org = ensureOrg(id); org.dont = value; saveComp(); }
+function updateMolDo(id, value) { const mol = ensureMol(id); mol.do = value; saveComp(); }
+function updateMolDont(id, value) { const mol = ensureMol(id); mol.dont = value; saveComp(); }
+function updateAtomDo(id, value) { const atom = ensureAtom(id); atom.do = value; saveComp(); }
+function updateAtomDont(id, value) { const atom = ensureAtom(id); atom.dont = value; saveComp(); }
+function updateCustomDo(tier, id, value) { const c = (compState.custom?.[tier] || []).find(x => x.id === id); if (c) { c.do = value; saveComp(); } }
+function updateCustomDont(tier, id, value) { const c = (compState.custom?.[tier] || []).find(x => x.id === id); if (c) { c.dont = value; saveComp(); } }
+function updateModalDo(tier, id, value) {
+  if (tier === 'org') updateOrgDo(id, value);
+  else if (tier === 'mol') updateMolDo(id, value);
+  else if (tier === 'atom') updateAtomDo(id, value);
+  else updateCustomDo(tier === 'custom-org' ? 'organisms' : tier === 'custom-mol' ? 'molecules' : 'atoms', id, value);
+}
+function updateModalDont(tier, id, value) {
+  if (tier === 'org') updateOrgDont(id, value);
+  else if (tier === 'mol') updateMolDont(id, value);
+  else if (tier === 'atom') updateAtomDont(id, value);
+  else updateCustomDont(tier === 'custom-org' ? 'organisms' : tier === 'custom-mol' ? 'molecules' : 'atoms', id, value);
 }
 function updateVariantName(id, index, value) {
   const org = ensureOrg(id);
@@ -3637,6 +3938,7 @@ function updateCustomVariantNotes(tier, id, index, value) {
 // ─────────────────────────────────────────────
 renderNewDashboard();
 refresh();
+_initCloudSync();
 </script>
 </body>
 </html>
